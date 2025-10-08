@@ -31,7 +31,7 @@ router.beforeEach((to, from, next) => {
 
   const isProtected = to.meta.requiresAuth
   if (!token && isProtected) {
-    next({ name: 'sign up' })
+    next({ name: 'sign in' })
     return
   }
 

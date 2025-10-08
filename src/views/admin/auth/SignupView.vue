@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { Field, Form, ErrorMessage, validate } from 'vee-validate'
+import { ref } from 'vue'
+import { Field, Form, ErrorMessage } from 'vee-validate'
 import * as yup from "yup"
 import signupService from '@/services/admin/auth/signupService'
 import { localStorageHelper } from '@/helpers/localstorageHelper'
