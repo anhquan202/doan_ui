@@ -1,22 +1,38 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import DefaultLayout from '@/layout/DefaultLayout.vue'
+import HomeView from '@/views/HomeView.vue'
 import publicRoutes from './publicRoutes'
 import { localStorageHelper } from '@/helpers/localstorageHelper'
+import RoomView from '@/views/admin/rooms/RoomView.vue'
+import { APP_URL } from '@/constants/appUrl'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     ...publicRoutes,
+
     {
       path: '/',
-      name: 'home',
+      component: DefaultLayout,
       meta: { requiresAuth: true },
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      meta: { requiresAuth: true },
-      component: () => import('../views/AboutView.vue'),
+      redirect: { name: 'rooms' },
+      children: [
+        {
+          path: APP_URL.ROOM,
+          name: 'rooms',
+          component: RoomView,
+        },
+        {
+          path: 'about',
+          name: 'about',
+          component: () => import('@/views/AboutView.vue'),
+        },
+        {
+          path: 'home',
+          name: 'home',
+          component: HomeView,
+        }
+      ],
     },
   ],
 })
@@ -25,12 +41,11 @@ router.beforeEach((to, from, next) => {
   const token = localStorageHelper.getToken()
 
   if (token && (to.name === 'sign in' || to.name === 'sign up')) {
-    next({ name: 'home' })
+    next({ name: 'rooms' })
     return
   }
 
-  const isProtected = to.meta.requiresAuth
-  if (!token && isProtected) {
+  if (!token && to.meta.requiresAuth) {
     next({ name: 'sign in' })
     return
   }

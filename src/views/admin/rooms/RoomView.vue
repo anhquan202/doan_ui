@@ -1,0 +1,3 @@
+<template>
+  room views
+</template>

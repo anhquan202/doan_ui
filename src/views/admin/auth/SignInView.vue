@@ -4,8 +4,8 @@ import * as yup from "yup"
 import { Field, Form, ErrorMessage } from 'vee-validate'
 import { localStorageHelper } from '@/helpers/localstorageHelper'
 import { useRouter } from 'vue-router'
-const router = useRouter()
 import signinService from '@/services/admin/auth/signinService'
+import router from '@/router'
 
 type Form = {
   email: string
@@ -23,12 +23,13 @@ const handleSubmit = async (values: Form) => {
   try {
     const result = await signinService(values)
     localStorageHelper.setToken(result.token)
-    router.push({ name: 'home' })
+    router.push({ name: 'rooms' })
   } catch (error: any) {
     errorApi.value = error.message
   }
 }
 </script>
+
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
     <div class="w-full max-w-md">
