@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios'
-import { localStorageHelper } from '@/helpers/localstorageHelper'
+import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
 
 class axiosConfig {
 	private static _instance: axiosConfig
@@ -15,7 +15,7 @@ class axiosConfig {
 		})
 
 		this.axiosInstance.interceptors.request.use((config) => {
-			const token = localStorageHelper.getToken()
+			const token = sessionStorageHelper.getToken()
 			if (token) config.headers.Authorization = `Bearer ${token}`
 			return config
 		})
@@ -43,8 +43,8 @@ class axiosConfig {
 		return this.axiosInstance.put(path, body)
 	}
 
-	delete(path: string) {
-		return this.axiosInstance.delete(path)
+	delete(path: string, params?: Record<string, any>) {
+		return this.axiosInstance.delete(path, { params })
 	}
 }
 

@@ -2,8 +2,7 @@
 import { ref } from 'vue'
 import * as yup from "yup"
 import { Field, Form, ErrorMessage } from 'vee-validate'
-import { localStorageHelper } from '@/helpers/localstorageHelper'
-import { useRouter } from 'vue-router'
+import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
 import signinService from '@/services/admin/auth/signinService'
 import router from '@/router'
 
@@ -22,7 +21,7 @@ const errorApi = ref("")
 const handleSubmit = async (values: Form) => {
   try {
     const result = await signinService(values)
-    localStorageHelper.setToken(result.token)
+    sessionStorageHelper.setToken(result.token)
     router.push({ name: 'rooms' })
   } catch (error: any) {
     errorApi.value = error.message

@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DefaultLayout from '@/layout/DefaultLayout.vue'
 import HomeView from '@/views/HomeView.vue'
 import publicRoutes from './publicRoutes'
-import { localStorageHelper } from '@/helpers/localstorageHelper'
+import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
 import RoomView from '@/views/admin/rooms/RoomView.vue'
 import { APP_URL } from '@/constants/appUrl'
 
@@ -38,7 +38,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorageHelper.getToken()
+  const token = sessionStorageHelper.getToken()
 
   if (token && (to.name === 'sign in' || to.name === 'sign up')) {
     next({ name: 'rooms' })

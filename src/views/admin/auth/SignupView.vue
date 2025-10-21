@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Field, Form, ErrorMessage } from 'vee-validate'
 import * as yup from "yup"
 import signupService from '@/services/admin/auth/signupService'
-import { localStorageHelper } from '@/helpers/localstorageHelper'
+import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
 type Form = {
 	first_name: string
 	last_name: string
@@ -41,7 +41,7 @@ async function onSubmit(values: any) {
 
 	try {
 		const response = await signupService.signup(payload)
-		localStorageHelper.setToken(response.token)
+		sessionStorageHelper.setToken(response.token)
 	} catch (failure: any) {
 		console.log('❌ Signup failed:', failure.errors)
 		errorApi.value = failure.errors
