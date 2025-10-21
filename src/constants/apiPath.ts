@@ -10,6 +10,5 @@ export const API_ENDPOINTS = {
     SHOW: (id: number | string) => `/v1/rooms/${id}`,
     CREATE: "/v1/rooms",
     UPDATE: (id: number | string) => `/v1/rooms/${id}`,
-    DELETE: (id: number | string) => `/v1/rooms/${id}`,
   }
 } as const

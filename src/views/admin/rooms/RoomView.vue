@@ -30,7 +30,6 @@ const handleChangePage = (page: number) => fetchRooms(page)
 
 const onCreateRoom = () => console.log('Tạo phòng mới')
 const onEdit = (room: RoomType) => console.log('Sửa phòng:', room)
-const onDelete = (id: number) => console.log('Xoá phòng ID:', id)
 
 const selectedRoom = ref<RoomType | null>(null)
 const showDetailModal = ref(false)
@@ -38,7 +37,6 @@ const modalComponent = ref<any | null>(null)
 
 const openDetail = async (room: RoomType) => {
   selectedRoom.value = room
-  // load modal component if not loaded yet
   if (!modalComponent.value) {
     const mod = await import('./RoomDetailModal.vue')
     modalComponent.value = mod.default || mod
@@ -60,7 +58,6 @@ const getStatusInfo = (status: string | null) => {
   }
   return map[status || ''] || { label: 'Không xác định', bg: 'bg-gray-100', text: 'text-gray-700' }
 }
-
 </script>
 
 <template>
@@ -98,16 +95,13 @@ const getStatusInfo = (status: string | null) => {
 
         <tbody>
           <tr v-if="rooms.length === 0" class="text-center text-gray-500">
-            <td colspan="6" class="py-8">
-              Không có phòng nào phù hợp.
-            </td>
+            <td colspan="6" class="py-8">Không có phòng nào phù hợp.</td>
           </tr>
 
           <tr v-for="(room, idx) in rooms" :key="room.id" :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
             <td class="px-4 py-3 font-medium">{{ room.room_name }}</td>
             <td class="px-4 py-3 capitalize">{{ room.room_type }}</td>
             <td class="px-4 py-3">{{ room.price?.toLocaleString('vi-VN') }}₫</td>
-
             <td class="px-4 py-3">
               <span v-if="room.status" :class="[
                 'px-2 py-1 text-xs font-semibold rounded-full',
@@ -120,25 +114,18 @@ const getStatusInfo = (status: string | null) => {
                 Không xác định
               </span>
             </td>
-
             <td class="px-4 py-3 text-sm text-gray-500 truncate max-w-xs">
               {{ room.description || '—' }}
             </td>
-
             <td class="px-4 py-3 text-right">
               <div class="flex justify-end gap-2">
                 <button @click="openDetail(room)"
                   class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
-                  <Eye class="h-4 w-4"></Eye>
+                  <Eye class="h-4 w-4" />
                 </button>
-
                 <button @click="onEdit(room)"
                   class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
                   <Edit2 class="h-4 w-4 text-gray-700" />
-                </button>
-                <button @click="onDelete(room.id)"
-                  class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-red-100 text-red-600 transition">
-                  <Trash2 class="h-4 w-4" />
                 </button>
               </div>
             </td>
@@ -146,11 +133,13 @@ const getStatusInfo = (status: string | null) => {
         </tbody>
       </table>
     </div>
+
     <!-- Pagination -->
     <div class="flex justify-end pt-4">
       <Paginate :meta="meta" :currentPage="currentPage" @change-page="handleChangePage" />
     </div>
   </div>
+
   <component v-if="showDetailModal && modalComponent" :is="modalComponent" :room="selectedRoom"
     :onClose="closeDetail" />
 </template>
