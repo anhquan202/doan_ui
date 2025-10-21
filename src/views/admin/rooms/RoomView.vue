@@ -32,6 +32,25 @@ const onCreateRoom = () => console.log('Tạo phòng mới')
 const onEdit = (room: RoomType) => console.log('Sửa phòng:', room)
 const onDelete = (id: number) => console.log('Xoá phòng ID:', id)
 
+const selectedRoom = ref<RoomType | null>(null)
+const showDetailModal = ref(false)
+const modalComponent = ref<any | null>(null)
+
+const openDetail = async (room: RoomType) => {
+  selectedRoom.value = room
+  // load modal component if not loaded yet
+  if (!modalComponent.value) {
+    const mod = await import('./RoomDetailModal.vue')
+    modalComponent.value = mod.default || mod
+  }
+  showDetailModal.value = true
+}
+
+const closeDetail = () => {
+  showDetailModal.value = false
+  selectedRoom.value = null
+}
+
 const getStatusInfo = (status: string | null) => {
   const map: Record<string, { label: string; bg: string; text: string }> = {
     available: { label: 'Còn trống', bg: 'bg-green-100', text: 'text-green-700' },
@@ -108,7 +127,8 @@ const getStatusInfo = (status: string | null) => {
 
             <td class="px-4 py-3 text-right">
               <div class="flex justify-end gap-2">
-                <button class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
+                <button @click="openDetail(room)"
+                  class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
                   <Eye class="h-4 w-4"></Eye>
                 </button>
 
@@ -131,6 +151,8 @@ const getStatusInfo = (status: string | null) => {
       <Paginate :meta="meta" :currentPage="currentPage" @change-page="handleChangePage" />
     </div>
   </div>
+  <component v-if="showDetailModal && modalComponent" :is="modalComponent" :room="selectedRoom"
+    :onClose="closeDetail" />
 </template>
 
 <style scoped>
