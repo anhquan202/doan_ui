@@ -35,8 +35,8 @@ class axiosConfig {
 		return this.axiosInstance.get(path, { params })
 	}
 
-	post(path: string, body?: any) {
-		return this.axiosInstance.post(path, body)
+	post<T = any>(path: string, body?: any): Promise<T> {
+		return this.axiosInstance.post(path, body);
 	}
 
 	put(path: string, body?: any) {

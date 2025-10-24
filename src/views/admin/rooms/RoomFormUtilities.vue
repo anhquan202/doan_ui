@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import getUtilitiesService from '@/services/admin/utilities/getUtilitiesService'
 import { Check } from 'lucide-vue-next'
 
@@ -24,11 +24,11 @@ const toggleUtility = (id: number) => {
 }
 
 const toggleRequired = (id: number) => {
-  selected.value = selected.value.map(u =>
-    u.utility_id === id ? { ...u, is_required: !u.is_required } : u
-  )
+  const item = selected.value.find(u => u.utility_id === id)
+  if (item) item.is_required = !item.is_required
 }
 </script>
+
 
 <template>
   <div>
@@ -45,7 +45,7 @@ const toggleRequired = (id: number) => {
           <span>{{ item.utility_type_label }}</span>
         </div>
 
-        <button v-if="selected.some(s => s.utility_id === item.id)" @click="toggleRequired(item.id)"
+        <button type="button" v-if="selected.some(s => s.utility_id === item.id)" @click="toggleRequired(item.id)"
           class="px-3 py-1 text-sm rounded-full border transition-all" :class="selected.find(s => s.utility_id === item.id)?.is_required
             ? 'bg-blue-100 text-blue-600 border-blue-400'
             : 'bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200'">

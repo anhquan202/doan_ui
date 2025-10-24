@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Check } from 'lucide-vue-next'
 import getListSuppliesService from '@/services/admin/supplies/getListSuppliesService'
 
@@ -17,8 +17,9 @@ onMounted(async () => {
   })
 })
 
+// Watch changes to sync with parent
 watch(selectedSupplies, (val) => {
-  emit('update:modelValue', val.map(({ supply_id, quantity }) => ({ supply_id, quantity })))
+  emit('update:modelValue', val.map(v => ({ supply_id: v.supply_id, quantity: v.quantity })))
 }, { deep: true })
 
 const toggleSupply = (id: number) => {

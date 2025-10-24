@@ -1,32 +1,59 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import RoomFormBasic from './RoomFormBasic.vue'
+import { Form as VForm, useForm } from 'vee-validate'
+import * as yup from 'yup'
+import createService from '@/services/admin/room/createService'
 import RoomFormSupplies from './RoomFormSupplies.vue'
 import RoomFormUtilities from './RoomFormUtilities.vue'
+import { Plus } from 'lucide-vue-next'
+import RoomFormBasic from './RoomFormBasic.vue'
+import { useRouter } from 'vue-router'
 
-const basicInfo = ref({ room_type: '', max_people: null, default_price: null })
-const supplies = ref([])
-const utilities = ref([])
-const showPreview = ref(false)
+const router = useRouter()
 
-const payload = computed(() => ({
-  ...basicInfo.value,
-  room_supplies_attributes: supplies.value,
-  room_utilities_attributes: utilities.value
-}))
+const basicInfo = ref({ room_type: '', description: '', price: 0 })
+const supplies = ref<any[]>([])
+const utilities = ref<any[]>([])
 
-const submitForm = () => {
-  console.log('Payload gửi:', payload.value)
-  showPreview.value = true
-}
+// Tạo lỗi FE cho supplies & utilities
+const supplyError = ref('')
+const utilityError = ref('')
 
-const resetForm = () => {
-  basicInfo.value = { room_type: '', max_people: null, default_price: null }
-  supplies.value = []
-  utilities.value = []
-  showPreview.value = false
+// Form schema cho basicInfo
+const schema = yup.object({
+  room_type: yup.string().required(),
+  max_customer: yup.number().required().min(1),
+  price: yup.number().required().min(0)
+})
+
+const { validate } = useForm({ validationSchema: schema })
+
+const submitForm = async () => {
+  const isValid = await validate()
+
+  supplyError.value = supplies.value.length === 0 ? 'Bạn chưa chọn vật dụng nào' : ''
+  utilityError.value = utilities.value.length === 0 ? 'Bạn chưa chọn tiện ích nào' : ''
+
+  if (!isValid || supplyError.value || utilityError.value) return
+
+  const payload = {
+    ...basicInfo.value,
+    room_supplies_attributes: supplies.value,
+    room_utilities_attributes: utilities.value
+  }
+
+  try {
+    const response = await createService(payload)
+    if (response.success) {
+      alert("Tạo phòng thành công")
+      router.push({ name: 'rooms' })
+    }
+  } catch (err) {
+    console.log(err)
+  }
 }
 </script>
+
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
     <div class="max-w-5xl mx-auto space-y-6">
@@ -47,7 +74,7 @@ const resetForm = () => {
         </div>
       </div>
 
-      <form @submit.prevent="submitForm" class="space-y-6">
+      <VForm @submit="submitForm" class="space-y-6">
         <div
           class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 hover:shadow-md transition-shadow duration-300">
           <div class="flex items-center gap-3 mb-6">
@@ -74,6 +101,7 @@ const resetForm = () => {
             <h2 class="text-xl font-semibold text-slate-900">Vật dụng phòng</h2>
           </div>
           <RoomFormSupplies v-model="supplies" />
+          <span v-if="supplyError" class="text-red-500 text-sm">{{ supplyError }}</span>
         </div>
 
         <div
@@ -89,32 +117,19 @@ const resetForm = () => {
             <h2 class="text-xl font-semibold text-slate-900">Tiện ích & Dịch vụ</h2>
           </div>
           <RoomFormUtilities v-model="utilities" />
+          <span v-if="utilityError" class="text-red-500 text-sm">{{ utilityError }}</span>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <div class="flex justify-end gap-4">
-            <button type="button"
-              class="px-8 py-3 border-2 border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-              @click="resetForm">
-              <span class="flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                Hủy bỏ
-              </span>
-            </button>
-            <button type="submit"
-              class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-              <span class="flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Tạo phòng mới
-              </span>
-            </button>
-          </div>
+          <button type="submit"
+            class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <span class="flex items-center gap-2">
+              <Plus class="size-5" />
+              Tạo phòng mới
+            </span>
+          </button>
         </div>
-      </form>
+      </VForm>
     </div>
   </div>
 </template>
