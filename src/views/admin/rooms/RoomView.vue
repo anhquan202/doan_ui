@@ -4,6 +4,7 @@ import showService from '@/services/admin/room/showService'
 import type { Room as RoomType, Meta } from '@/services/admin/room/showService'
 import { Plus, Edit2, Trash2, Eye } from 'lucide-vue-next'
 import Paginate from '@/components/Paginate.vue'
+import { APP_URL } from '@/constants/appUrl'
 
 const rooms = ref<RoomType[]>([])
 const meta = ref<Meta | null>(null)
@@ -27,9 +28,6 @@ const fetchRooms = async (page = 1) => {
 onMounted(() => fetchRooms())
 
 const handleChangePage = (page: number) => fetchRooms(page)
-
-const onCreateRoom = () => console.log('Tạo phòng mới')
-const onEdit = (room: RoomType) => console.log('Sửa phòng:', room)
 
 const selectedRoom = ref<RoomType | null>(null)
 const showDetailModal = ref(false)
@@ -67,11 +65,11 @@ const getStatusInfo = (status: string | null) => {
       <h1 class="text-2xl font-bold tracking-tight text-gray-800">
         Danh sách phòng
       </h1>
-      <button @click="onCreateRoom"
+      <a :href="APP_URL.CREATE_ROOM"
         class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
         <Plus class="h-4 w-4" />
         Tạo phòng mới
-      </button>
+      </a>
     </div>
 
     <!-- Loading -->
@@ -123,10 +121,10 @@ const getStatusInfo = (status: string | null) => {
                   class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
                   <Eye class="h-4 w-4" />
                 </button>
-                <button @click="onEdit(room)"
+                <a :href="APP_URL.EDIT_ROOM(room.id)"
                   class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
                   <Edit2 class="h-4 w-4 text-gray-700" />
-                </button>
+                </a>
               </div>
             </td>
           </tr>
