@@ -121,10 +121,10 @@ const getStatusInfo = (status: string | null) => {
                   class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
                   <Eye class="h-4 w-4" />
                 </button>
-                <a :href="APP_URL.EDIT_ROOM(room.id)"
+                <router-link :to="{ name: 'room.edit', params: { id: room.id } }"
                   class="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-200 transition">
                   <Edit2 class="h-4 w-4 text-gray-700" />
-                </a>
+                </router-link>
               </div>
             </td>
           </tr>

@@ -1,3 +1,12 @@
+<script setup>
+import { ref } from 'vue'
+import Header from './Header.vue'
+import Sidebar from './Sidebar.vue'
+
+const isSidebarOpen = ref(false)
+const toggleSidebar = () => (isSidebarOpen.value = !isSidebarOpen.value)
+</script>
+
 <template>
   <div class="min-h-screen bg-gray-50">
     <Header @toggleSidebar="toggleSidebar" />
@@ -9,12 +18,3 @@
     </main>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import Header from './Header.vue'
-import Sidebar from './Sidebar.vue'
-
-const isSidebarOpen = ref(false)
-const toggleSidebar = () => (isSidebarOpen.value = !isSidebarOpen.value)
-</script>

@@ -9,28 +9,61 @@ const emit = defineEmits(['update:modelValue'])
 const supplies = ref<any[]>([])
 const selectedSupplies = ref<{ supply_id: number; name: string; quantity: number }[]>([])
 
+let updatingFromParent = false
+
+// Watch parent props
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (!val || supplies.value.length === 0) return
+    updatingFromParent = true
+    selectedSupplies.value = val.map(item => {
+      const found = supplies.value.find((s: any) => s.id === item.supply_id)
+      return { ...item, name: found?.name || '' }
+    })
+    updatingFromParent = false
+  },
+  { immediate: true, deep: true }
+)
+
+// Watch child changes to emit to parent
+watch(
+  selectedSupplies,
+  (val) => {
+    if (!updatingFromParent) {
+      emit('update:modelValue', val.map(v => ({ supply_id: v.supply_id, quantity: v.quantity })))
+    }
+  },
+  { deep: true }
+)
+
+// Load supplies from service
 onMounted(async () => {
   supplies.value = await getListSuppliesService()
-  selectedSupplies.value = props.modelValue.map(item => {
-    const found = supplies.value.find((s: any) => s.id === item.supply_id)
-    return { ...item, name: found?.name || '' }
-  })
+
+  // Initialize selectedSupplies only if modelValue has data
+  if (props.modelValue && props.modelValue.length) {
+    updatingFromParent = true
+    selectedSupplies.value = props.modelValue.map(item => {
+      const found = supplies.value.find((s: any) => s.id === item.supply_id)
+      return { ...item, name: found?.name || '' }
+    })
+    updatingFromParent = false
+  }
 })
 
-// Watch changes to sync with parent
-watch(selectedSupplies, (val) => {
-  emit('update:modelValue', val.map(v => ({ supply_id: v.supply_id, quantity: v.quantity })))
-}, { deep: true })
-
+// Toggle selection
 const toggleSupply = (id: number) => {
   const existing = selectedSupplies.value.find(s => s.supply_id === id)
-  if (existing) selectedSupplies.value = selectedSupplies.value.filter(s => s.supply_id !== id)
-  else {
+  if (existing) {
+    selectedSupplies.value = selectedSupplies.value.filter(s => s.supply_id !== id)
+  } else {
     const found = supplies.value.find(s => s.id === id)
     if (found) selectedSupplies.value.push({ supply_id: id, name: found.name, quantity: 1 })
   }
 }
 
+// Update quantity
 const updateQuantity = (id: number, qty: number) => {
   selectedSupplies.value = selectedSupplies.value.map(s =>
     s.supply_id === id ? { ...s, quantity: Math.max(1, qty) } : s

@@ -58,7 +58,7 @@ const menuItems = ref([
     id: 'rooms',
     label: 'Quản lý phòng trọ',
     icon: Building2,
-    link: APP_URL.ROOM
+    link: `/${APP_URL.ROOM}`
   },
   {
     id: 'users',

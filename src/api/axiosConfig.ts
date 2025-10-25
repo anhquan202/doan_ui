@@ -43,6 +43,10 @@ class axiosConfig {
 		return this.axiosInstance.put(path, body)
 	}
 
+	patch(path: string, body?: any) {
+		return this.axiosInstance.patch(path, body)
+	}
+
 	delete(path: string, params?: Record<string, any>) {
 		return this.axiosInstance.delete(path, { params })
 	}

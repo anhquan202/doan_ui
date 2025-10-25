@@ -3,5 +3,5 @@ export const APP_URL = {
   REGISTER: '/sign_up',
   ROOM: 'rooms',
   CREATE_ROOM: "rooms/create",
-  EDIT_ROOM: (id: number) => `rooms/create/${id}`
+  EDIT_ROOM: (id: number) => `rooms/edit/${id}`
 }

@@ -13,10 +13,6 @@ onMounted(async () => {
   utilities.value = await getUtilitiesService()
 })
 
-watch(selected, (val) => {
-  emit('update:modelValue', val)
-}, { deep: true })
-
 const toggleUtility = (id: number) => {
   const existing = selected.value.find(u => u.utility_id === id)
   if (existing) selected.value = selected.value.filter(u => u.utility_id !== id)
@@ -27,6 +23,26 @@ const toggleRequired = (id: number) => {
   const item = selected.value.find(u => u.utility_id === id)
   if (item) item.is_required = !item.is_required
 }
+
+let updatingFromParent = false
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (!val) return
+    updatingFromParent = true
+    selected.value = val.map(item => ({ ...item }))
+    updatingFromParent = false
+  },
+  { immediate: true, deep: true }
+)
+
+watch(selected, (val) => {
+  if (!updatingFromParent) {
+    emit('update:modelValue', val)
+  }
+}, { deep: true })
+
 </script>
 
 

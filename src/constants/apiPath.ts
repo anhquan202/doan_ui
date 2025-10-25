@@ -6,10 +6,11 @@ export const API_ENDPOINTS = {
     PROFILE: "/v1/auth/profile",
   },
   ROOM: {
+    STATUS: "/v1/rooms/status",
     LIST: "/v1/rooms",
     SHOW: (id: number | string) => `/v1/rooms/${id}`,
     CREATE: "/v1/rooms",
-    UPDATE: (id: number | string) => `/v1/rooms/${id}`,
+    EDIT: (id: number | string) => `/v1/rooms/${id}`,
   },
   SUPPLIES: {
     LIST: "/v1/supplies"
