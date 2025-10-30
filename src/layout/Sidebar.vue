@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Building2, ChevronDown, FileText, Users } from 'lucide-vue-next'
+import { Building2, ChevronDown, ClipboardList, FileText, Users } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { APP_URL } from '@/constants/appUrl'
 
@@ -59,6 +59,12 @@ const menuItems = ref([
     label: 'Quản lý phòng trọ',
     icon: Building2,
     link: `/${APP_URL.ROOM}`
+  },
+  {
+    id: 'supplies',
+    label: 'Quản lý vật tư',
+    icon: ClipboardList,
+    link: `/${APP_URL.SUPPLY}`
   },
   {
     id: 'users',

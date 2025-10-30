@@ -13,7 +13,9 @@ export const API_ENDPOINTS = {
     EDIT: (id: number | string) => `/v1/rooms/${id}`,
   },
   SUPPLIES: {
-    LIST: "/v1/supplies"
+    LIST: "/v1/supplies",
+    CREATE: "/v1/supplies",
+    EDIT: (id: number | string) => `/v1/supplies/${id}`,
   },
   UTILITIES: {
     LIST: "/v1/utilities"

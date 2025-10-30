@@ -7,6 +7,7 @@ import RoomView from '@/views/admin/rooms/RoomView.vue'
 import { APP_URL } from '@/constants/appUrl'
 import CreateRoomView from '@/views/admin/rooms/CreateRoomView.vue'
 import EditRoomView from '@/views/admin/rooms/EditRoomView.vue'
+import SupplyHomeVue from '@/views/admin/supplies/SupplyHomeVue.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,6 +34,11 @@ const router = createRouter({
           path: 'rooms/edit/:id',
           name: 'room.edit',
           component: EditRoomView,
+        },
+        {
+          path: 'supplies',
+          name: 'supplies',
+          component: SupplyHomeVue,
         },
         {
           path: 'about',
