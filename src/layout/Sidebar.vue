@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Building2, ChevronDown, ClipboardList, FileText, Users } from 'lucide-vue-next'
+import { Building2, ChevronDown, ClipboardList, FileText, Rss, Users } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { APP_URL } from '@/constants/appUrl'
 
@@ -65,6 +65,12 @@ const menuItems = ref([
     label: 'Quản lý vật tư',
     icon: ClipboardList,
     link: `/${APP_URL.SUPPLY}`
+  },
+  {
+    id: 'utilities',
+    label: 'Quản lý tiện ích',
+    icon: Rss,
+    link: `/${APP_URL.UTILITY}`
   },
   {
     id: 'users',

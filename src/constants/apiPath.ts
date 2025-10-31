@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
     EDIT: (id: number | string) => `/v1/supplies/${id}`,
   },
   UTILITIES: {
-    LIST: "/v1/utilities"
+    LIST: "/v1/utilities",
+    EDIT: (id: number | string) => `/v1/utilities/${id}`,
   }
 } as const

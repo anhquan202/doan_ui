@@ -4,5 +4,6 @@ export const APP_URL = {
   ROOM: 'rooms',
   CREATE_ROOM: "rooms/create",
   EDIT_ROOM: (id: number) => `rooms/edit/${id}`,
-  SUPPLY: 'supplies'
+  SUPPLY: 'supplies',
+  UTILITY: "utilities"
 }

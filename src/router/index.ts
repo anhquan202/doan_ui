@@ -8,6 +8,7 @@ import { APP_URL } from '@/constants/appUrl'
 import CreateRoomView from '@/views/admin/rooms/CreateRoomView.vue'
 import EditRoomView from '@/views/admin/rooms/EditRoomView.vue'
 import SupplyHomeVue from '@/views/admin/supplies/SupplyHomeVue.vue'
+import UtilityHomeView from '@/views/admin/utilities/UtilityHomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +40,11 @@ const router = createRouter({
           path: 'supplies',
           name: 'supplies',
           component: SupplyHomeVue,
+        },
+        {
+          path: 'utilities',
+          name: 'utilities',
+          component: UtilityHomeView,
         },
         {
           path: 'about',
