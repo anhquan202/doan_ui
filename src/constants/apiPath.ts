@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
     SHOW: (id: number | string) => `/v1/rooms/${id}`,
     CREATE: "/v1/rooms",
     EDIT: (id: number | string) => `/v1/rooms/${id}`,
+    AVAILABLE: "/v1/rooms/available"
   },
   SUPPLIES: {
     LIST: "/v1/supplies",
@@ -20,5 +21,11 @@ export const API_ENDPOINTS = {
   UTILITIES: {
     LIST: "/v1/utilities",
     EDIT: (id: number | string) => `/v1/utilities/${id}`,
+  },
+  CONTRACTS: {
+    LIST: "/v1/contracts",
+    CREATE: "/v1/contracts",
+    EDIT: (id: number | string) => `/v1/contracts/${id}`,
+    SHOW: (id: number | string) => `/v1/contracts/${id}`,
   }
 } as const

@@ -9,6 +9,8 @@ import CreateRoomView from '@/views/admin/rooms/CreateRoomView.vue'
 import EditRoomView from '@/views/admin/rooms/EditRoomView.vue'
 import SupplyHomeVue from '@/views/admin/supplies/SupplyHomeVue.vue'
 import UtilityHomeView from '@/views/admin/utilities/UtilityHomeView.vue'
+import ContractIndex from '@/views/admin/contracts/ContractIndex.vue'
+import CreateContractView from '@/views/admin/contracts/CreateContractView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +42,16 @@ const router = createRouter({
           path: 'supplies',
           name: 'supplies',
           component: SupplyHomeVue,
+        },
+        {
+          path: 'contracts',
+          name: 'contracts',
+          component: ContractIndex,
+        },
+        {
+          path: 'contracts/create',
+          name: 'contracts.create',
+          component: CreateContractView,
         },
         {
           path: 'utilities',

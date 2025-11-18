@@ -81,10 +81,10 @@ const menuItems = ref([
     ]
   },
   {
-    id: 'invoice',
-    label: 'Hóa đơn',
+    id: 'contracts',
+    label: 'Quản lý hợp đồng',
     icon: FileText,
-    link: '/invoice'
+    link: '/contracts'
   }
 ])
 
