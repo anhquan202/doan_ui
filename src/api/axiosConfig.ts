@@ -31,23 +31,23 @@ class axiosConfig {
 		return this._instance
 	}
 
-	get(path: string, params?: Record<string, any>) {
+	get<T = any>(path: string, params?: Record<string, any>): Promise<T> {
 		return this.axiosInstance.get(path, { params })
 	}
 
 	post<T = any>(path: string, body?: any): Promise<T> {
-		return this.axiosInstance.post(path, body);
+		return this.axiosInstance.post(path, body)
 	}
 
-	put(path: string, body?: any) {
+	put<T = any>(path: string, body?: any): Promise<T> {
 		return this.axiosInstance.put(path, body)
 	}
 
-	patch(path: string, body?: any) {
+	patch<T = any>(path: string, body?: any): Promise<T> {
 		return this.axiosInstance.patch(path, body)
 	}
 
-	delete(path: string, params?: Record<string, any>) {
+	delete<T = any>(path: string, params?: Record<string, any>): Promise<T> {
 		return this.axiosInstance.delete(path, { params })
 	}
 }
