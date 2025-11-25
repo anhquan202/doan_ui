@@ -27,5 +27,6 @@ export const API_ENDPOINTS = {
     CREATE: "/v1/contracts",
     EDIT: (id: number | string) => `/v1/contracts/${id}`,
     SHOW: (id: number | string) => `/v1/contracts/${id}`,
+    CHANGE_STATUS: (id: number | string) => `/v1/contracts/${id}/status`,
   }
 } as const
