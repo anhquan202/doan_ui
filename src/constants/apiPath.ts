@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   },
   CUSTOMERS: {
     LIST: "/v1/customers",
+    DETAIL: (id: number | string) => `/v1/customers/${id}`,
     CREATE: "/v1/customers",
     EDIT: (id: number | string) => `/v1/customers/${id}`
   }

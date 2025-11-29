@@ -12,6 +12,7 @@ import UtilityHomeView from '@/views/admin/utilities/UtilityHomeView.vue'
 import ContractIndex from '@/views/admin/contracts/ContractIndex.vue'
 import CreateContractView from '@/views/admin/contracts/CreateContractView.vue'
 import CustomerView from '@/views/admin/customers/CustomerView.vue'
+import EditCustomerView from '@/views/admin/customers/EditCustomerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,6 +59,11 @@ const router = createRouter({
           path: 'customers',
           name: 'customers',
           component: () => CustomerView
+        },
+        {
+          path: 'customers/edit/:id',
+          name: 'customers.edit',
+          component: EditCustomerView
         },
         {
           path: 'utilities',

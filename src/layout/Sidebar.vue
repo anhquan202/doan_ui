@@ -76,7 +76,7 @@ const menuItems = ref([
     id: 'users',
     label: 'Quản lý con người',
     icon: Users,
-    link: 'customers'
+    link: '/customers'
   },
   {
     id: 'contracts',
