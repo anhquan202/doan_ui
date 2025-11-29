@@ -11,6 +11,7 @@ import SupplyHomeVue from '@/views/admin/supplies/SupplyHomeVue.vue'
 import UtilityHomeView from '@/views/admin/utilities/UtilityHomeView.vue'
 import ContractIndex from '@/views/admin/contracts/ContractIndex.vue'
 import CreateContractView from '@/views/admin/contracts/CreateContractView.vue'
+import CustomerView from '@/views/admin/customers/CustomerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +53,11 @@ const router = createRouter({
           path: 'contracts/create',
           name: 'contracts.create',
           component: CreateContractView,
+        },
+        {
+          path: 'customers',
+          name: 'customers',
+          component: () => CustomerView
         },
         {
           path: 'utilities',
