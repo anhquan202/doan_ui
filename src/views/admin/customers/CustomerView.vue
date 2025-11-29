@@ -5,13 +5,19 @@ import { getCustomersService } from '@/services/admin/customers/getCustomersServ
 import type { Customer, PaginationMeta } from '@/types/Customers'
 import Paginate from '@/components/Paginate.vue'
 import { getCustomerStatusClass } from '@/helpers/statuses/customerStatusHelpers'
+import router from '@/router'
+import CustomerDetailView from './CustomerDetailView.vue'
 
 const customers = ref<Customer[]>([])
+
+const selectedCustomerId = ref<number | null>(null)
+const showModalCustomerDetail = ref(false)
+
 const meta = ref<PaginationMeta | null>(null)
 const currentPage = ref(1)
 const loading = ref(false)
 
-const fetchCustomers = async (page = 1, perPage = 4) => {
+const fetchCustomers = async (page = 1, perPage = 10) => {
   try {
     loading.value = true
     const res = await getCustomersService(page, perPage)
@@ -30,20 +36,22 @@ const fetchCustomers = async (page = 1, perPage = 4) => {
 const handleChangePage = (page: number) => fetchCustomers(page)
 
 const handleView = (customer: Customer) => {
-  console.log('View customer:', customer)
-  // Implement view logic
+  selectedCustomerId.value = customer.id
+  showModalCustomerDetail.value = true
+}
+
+const closeModal = () => {
+  showModalCustomerDetail.value = false
+  selectedCustomerId.value = null
 }
 
 const handleEdit = (customer: Customer) => {
-  console.log('Edit customer:', customer)
-  // Implement edit logic
+  router.push({ name: 'customers.edit', params: { id: customer.id } })
 }
 
 const handleDelete = (customer: Customer) => {
   console.log('Delete customer:', customer)
-  // Implement delete logic with confirmation
   if (confirm(`Bạn có chắc chắn muốn xóa khách hàng ${customer.full_name}?`)) {
-    // Call delete API
   }
 }
 
@@ -53,6 +61,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <CustomerDetailView :id="selectedCustomerId" :show="showModalCustomerDetail" :close="closeModal" />
   <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Quản lý khách hàng</h1>

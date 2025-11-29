@@ -34,6 +34,21 @@ export interface CustomersResponseData {
   meta: PaginationMeta
 }
 
+export interface CustomerDetail extends Customer {
+  room_name: string
+}
+
+export interface CustomerDetailResponseData {
+  customer: CustomerDetail
+}
+
+export interface EditCustomerPayload {
+  id: number
+  email: string
+  phone: string
+  address: string
+}
+
 export interface ApiResponse<T> {
   success: boolean
   message: string
