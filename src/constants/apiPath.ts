@@ -28,5 +28,10 @@ export const API_ENDPOINTS = {
     EDIT: (id: number | string) => `/v1/contracts/${id}`,
     SHOW: (id: number | string) => `/v1/contracts/${id}`,
     CHANGE_STATUS: (id: number | string) => `/v1/contracts/${id}/status`,
+  },
+  CUSTOMERS: {
+    LIST: "/v1/customers",
+    CREATE: "/v1/customers",
+    EDIT: (id: number | string) => `/v1/customers/${id}`
   }
 } as const
