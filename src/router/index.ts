@@ -13,6 +13,7 @@ import ContractIndex from '@/views/admin/contracts/ContractIndex.vue'
 import CreateContractView from '@/views/admin/contracts/CreateContractView.vue'
 import CustomerView from '@/views/admin/customers/CustomerView.vue'
 import EditCustomerView from '@/views/admin/customers/EditCustomerView.vue'
+import ContractDetailView from '@/views/admin/contracts/ContractDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -54,6 +55,11 @@ const router = createRouter({
           path: 'contracts/create',
           name: 'contracts.create',
           component: CreateContractView,
+        },
+        {
+          path: 'contracts/edit/:id',
+          name: 'contracts.edit',
+          component: () => ContractDetailView
         },
         {
           path: 'customers',

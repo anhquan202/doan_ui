@@ -239,6 +239,8 @@ import { Clock, Eye, FileText, Home, Plus, RefreshCw, SquarePen } from 'lucide-v
 import { getStatusContractService } from '@/services/admin/option_values/getStatusContractService'
 import { changeStatusContractService } from '@/services/admin/contracts/changStatusContractService'
 import { toastSuccess } from '@/helpers/toast'
+import router from '@/router'
+import type { Contract } from '@/types/Contracts'
 
 const contracts = ref<any[]>([])
 const loading = ref(false)
@@ -322,8 +324,8 @@ const getStatusBadgeClass = (status: string) => {
   return classes[status] || 'bg-slate-100 text-slate-700 border border-slate-200'
 }
 
-const viewContract = (contract: any) => {
-  console.log('View', contract)
+const viewContract = (contract: Contract) => {
+  router.push({ name: 'contracts.edit', params: { id: contract.id } })
 }
 
 const editContract = (contract: any) => {
