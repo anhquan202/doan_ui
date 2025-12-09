@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from 'axios'
 import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
-
+import qs from "qs"
 class axiosConfig {
 	private static _instance: axiosConfig
 	private axiosInstance: AxiosInstance
@@ -12,6 +12,11 @@ class axiosConfig {
 				Accept: 'application/json',
 				'Content-Type': 'application/json',
 				'Accept-Language': 'vi'
+			},
+			paramsSerializer: {
+				serialize: (params) => {
+					return qs.stringify(params, { arrayFormat: "brackets" })
+				},
 			},
 		})
 
