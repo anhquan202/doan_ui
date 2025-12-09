@@ -39,13 +39,27 @@ export type RoomResponse = {
   meta: Meta;
 };
 
-const showService = async (page = 1): Promise<RoomResponse> => {
-  const response = await networkManager.get(API_ENDPOINTS.ROOM.LIST, { page });
+export interface RoomQueryParams {
+  q?: string;
+  status?: number[];
+  room_type?: number[];
+  price_min?: number;
+  price_max?: number;
+  page?: number;
+  per_page?: number;
+}
 
-  const { data } = response;
+const showService = async (
+  page = 1,
+  params?: RoomQueryParams
+): Promise<RoomResponse> => {
+  const queryParams = { page, ...params };
+
+  const response = await networkManager.get(API_ENDPOINTS.ROOM.LIST, queryParams);
+
   return {
-    rooms: data.rooms,
-    meta: data.meta,
+    rooms: response.data.rooms,
+    meta: response.data.meta,
   };
 };
 

@@ -1,20 +1,97 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import showService from '@/services/admin/room/showService'
-import type { Room as RoomType, Meta } from '@/services/admin/room/showService'
-import { Plus, Edit2, Trash2, Eye } from 'lucide-vue-next'
+import type { Room as RoomType, Meta, RoomQueryParams } from '@/services/admin/room/showService'
+import { Plus, Edit2, Eye } from 'lucide-vue-next'
 import Paginate from '@/components/Paginate.vue'
+import RoomSearchForm from '@/components/room/RoomSearchForm.vue'
 import { APP_URL } from '@/constants/appUrl'
+import { useRouter, useRoute } from 'vue-router'
+
+interface SearchFilters {
+  q: string
+  status: number[]
+  room_type: number[]
+  price_min: string
+  price_max: string
+}
+
+const router = useRouter()
+const route = useRoute()
 
 const rooms = ref<RoomType[]>([])
 const meta = ref<Meta | null>(null)
 const currentPage = ref(1)
 const loading = ref(false)
 
+// State cho filter
+const searchFilters = ref<SearchFilters>({
+  q: '',
+  status: [],
+  room_type: [],
+  price_min: '',
+  price_max: '',
+})
+
+// ---------------------------------------------------------
+// INIT FILTER FROM URL
+// ---------------------------------------------------------
+const initializeFiltersFromUrl = () => {
+  const q = (route.query.q as string) || ''
+
+  const statusRaw = route.query.status
+  const roomTypeRaw = route.query.room_type
+
+  const status = statusRaw
+    ? (Array.isArray(statusRaw) ? statusRaw : [statusRaw]).map(v => Number(v))
+    : []
+
+  const room_type = roomTypeRaw
+    ? (Array.isArray(roomTypeRaw) ? roomTypeRaw : [roomTypeRaw]).map(v => Number(v))
+    : []
+
+  const price_min = (route.query.price_min as string) || ''
+  const price_max = (route.query.price_max as string) || ''
+
+  searchFilters.value = {
+    q,
+    status,
+    room_type,
+    price_min,
+    price_max,
+  }
+}
+
+const buildQueryParams = (filters: SearchFilters): RoomQueryParams => {
+  const params: RoomQueryParams = {}
+
+  if (filters.q) params.q = filters.q
+  if (filters.status.length > 0) params.status = filters.status
+  if (filters.room_type.length > 0) params.room_type = filters.room_type
+  if (filters.price_min) params.price_min = Number(filters.price_min)
+  if (filters.price_max) params.price_max = Number(filters.price_max)
+
+  return params
+}
+
+const updateUrlParams = (filters: SearchFilters) => {
+  const queryParams: any = {}
+
+  if (filters.q) queryParams.q = filters.q
+  if (filters.status.length > 0) queryParams.status = filters.status
+  if (filters.room_type.length > 0) queryParams.room_type = filters.room_type
+  if (filters.price_min) queryParams.price_min = filters.price_min
+  if (filters.price_max) queryParams.price_max = filters.price_max
+
+  router.push({ name: 'rooms', query: queryParams })
+}
+
 const fetchRooms = async (page = 1) => {
   loading.value = true
   try {
-    const res = await showService(page)
+    const queryParams = buildQueryParams(searchFilters.value)
+    const res = await showService(page, queryParams)
+
     rooms.value = res.rooms
     meta.value = res.meta
     currentPage.value = res.meta.current_page
@@ -25,10 +102,33 @@ const fetchRooms = async (page = 1) => {
   }
 }
 
-onMounted(() => fetchRooms())
+const handleSearchSubmit = (filters: SearchFilters) => {
+  searchFilters.value = filters
+  updateUrlParams(filters)
+  fetchRooms(1)
+}
+
+const handleClearFilters = () => {
+  searchFilters.value = {
+    q: '',
+    status: [],
+    room_type: [],
+    price_min: '',
+    price_max: '',
+  }
+
+  router.push({ name: 'rooms', query: {} })
+  fetchRooms(1)
+}
+
+onMounted(() => {
+  initializeFiltersFromUrl()
+  fetchRooms()
+})
 
 const handleChangePage = (page: number) => fetchRooms(page)
 
+// Detail modal
 const selectedRoom = ref<RoomType | null>(null)
 const showDetailModal = ref(false)
 const modalComponent = ref<any | null>(null)
@@ -47,6 +147,7 @@ const closeDetail = () => {
   selectedRoom.value = null
 }
 
+// Status UI map
 const getStatusInfo = (status: string | null) => {
   const map: Record<string, { label: string; bg: string; text: string }> = {
     available: { label: 'Còn trống', bg: 'bg-green-100', text: 'text-green-700' },
@@ -71,6 +172,9 @@ const getStatusInfo = (status: string | null) => {
         Tạo phòng mới
       </a>
     </div>
+
+    <!-- Search Form Component -->
+    <RoomSearchForm :initialFilters="searchFilters" @search="handleSearchSubmit" @clear="handleClearFilters" />
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-10">
