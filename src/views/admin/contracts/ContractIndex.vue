@@ -5,7 +5,6 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-3xl font-bold text-slate-800">Danh sách hợp đồng</h2>
-          <p class="text-slate-600 mt-1">Quản lý và theo dõi các hợp đồng thuê phòng</p>
         </div>
         <router-link :to="{ name: 'contracts.create' }"
           class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105">

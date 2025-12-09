@@ -119,7 +119,6 @@ function formatCurrency(amount: number) {
       <!-- Header -->
       <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Quản lý Tiện ích</h1>
-        <p class="text-gray-500 mt-1">Danh sách các tiện ích và chi phí liên quan</p>
       </div>
 
       <!-- Loading -->
