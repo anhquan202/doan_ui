@@ -38,5 +38,8 @@ export const API_ENDPOINTS = {
   VEHICLES: {
     LIST: "/v1/vehicles",
     TOGGLE_ACTIVE: (id: number | string) => `/v1/vehicles/${id}/active`
+  },
+  METER_READINGS: {
+    LIST: "/v1/meter_reading"
   }
 } as const

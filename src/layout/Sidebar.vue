@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Building2, ChevronDown, ClipboardList, FileText, Motorbike, Rss, Users } from 'lucide-vue-next'
+import { Building2, ChevronDown, ClipboardList, Clock, FileText, Motorbike, Rss, Users } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { APP_URL } from '@/constants/appUrl'
 
@@ -89,7 +89,13 @@ const menuItems = ref([
     label: 'Quản lý hợp đồng',
     icon: FileText,
     link: '/contracts'
-  }
+  },
+  {
+    id: 'meter_readings',
+    label: 'Thông số đồng hồ',
+    icon: Clock,
+    link: `/meter-readings`
+  },
 ])
 
 const openMenus = ref({})
