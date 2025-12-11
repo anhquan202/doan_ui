@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from "vue"
 import { getMeterReadingsService } from "@/services/admin/meter_readings/getMeterReadingsService"
+import { importMeterReadingsService } from "@/services/admin/meter_readings/importMeterReadingsService"
 import type { MeterReading, MeterReadingMeta, MeterReadingParams } from "@/types/MeterReadings"
 import Paginate from '@/components/Paginate.vue'
+import { useToast } from "vue-toastification"
+
+const toast = useToast()
 
 const meterReadings = ref<MeterReading[]>([])
 const meta = ref<MeterReadingMeta>({
@@ -14,6 +18,7 @@ const meta = ref<MeterReadingMeta>({
   total_pages: 1,
 })
 const loading = ref(false)
+const uploading = ref(false)
 const error = ref("")
 const uploadedFile = ref<File | null>(null)
 
@@ -74,21 +79,40 @@ const handleChangePage = (page: number) => {
   fetchMeterReadings(page)
 }
 
-// const handleFileChange = (event: Event) => {
-//   const target = event.target as HTMLInputElement
-//   if (target.files && target.files.length > 0) {
-//     uploadedFile.value = target.files[0]
-//   }
-// }
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files.length > 0 && target.files[0]) {
+    uploadedFile.value = target.files[0]
+  }
+}
 
-const handleFileUpload = () => {
+const handleFileUpload = async () => {
   if (!uploadedFile.value) {
-    alert("Vui lòng chọn file")
+    toast.error("Vui lòng chọn file")
     return
   }
-  // TODO: Implement file upload logic
-  console.log("Uploading file:", uploadedFile.value.name)
-  alert(`Đang tải lên file: ${uploadedFile.value.name}`)
+
+  const validExtensions = ['xlsx', 'xls', 'csv']
+  const fileExtension = uploadedFile.value.name.split('.').pop()?.toLowerCase()
+
+  if (!fileExtension || !validExtensions.includes(fileExtension)) {
+    toast.error("Vui lòng chọn file có định dạng .xlsx, .xls hoặc .csv")
+    return
+  }
+
+  uploading.value = true
+  try {
+    await importMeterReadingsService(uploadedFile.value)
+    toast.success("Tải lên file thành công")
+    clearFile()
+    // Reload dữ liệu sau khi import thành công
+    await fetchMeterReadings(1)
+  } catch (err) {
+    console.error(err)
+    toast.error("Tải lên file thất bại. Vui lòng thử lại")
+  } finally {
+    uploading.value = false
+  }
 }
 
 const clearFile = () => {
@@ -105,11 +129,11 @@ const formatCurrency = (value: number) => {
 }
 
 const getTotalElectricFee = (reading: MeterReading) => {
-  return reading.electric_readings.reduce((sum, item) => sum + item.total_fee, 0)
+  return reading.electric_reading.total_fee
 }
 
 const getTotalWaterFee = (reading: MeterReading) => {
-  return reading.water_readings.reduce((sum, item) => sum + item.total_fee, 0)
+  return reading.water_reading.total_fee
 }
 
 const getTotalAmount = (reading: MeterReading) => {
@@ -117,11 +141,11 @@ const getTotalAmount = (reading: MeterReading) => {
 }
 
 const getElectricUsage = (reading: MeterReading) => {
-  return reading.electric_readings.reduce((sum, item) => sum + (item.end_num - item.start_num), 0)
+  return reading.electric_reading.end_num - reading.electric_reading.start_num
 }
 
 const getWaterUsage = (reading: MeterReading) => {
-  return reading.water_readings.reduce((sum, item) => sum + (item.end_num - item.start_num), 0)
+  return reading.water_reading.end_num - reading.water_reading.start_num
 }
 
 onMounted(() => {
@@ -174,7 +198,7 @@ onMounted(() => {
         <label class="text-sm font-medium text-gray-700">Import dữ liệu:</label>
 
         <div class="flex-1 min-w-[250px]">
-          <input id="file-upload" type="file" accept=".xlsx,.xls,.csv"
+          <input id="file-upload" type="file" accept=".xlsx,.xls,.csv" @change="handleFileChange"
             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
           <p v-if="uploadedFile" class="mt-2 text-xs text-gray-600">
             File đã chọn: <span class="font-medium">{{ uploadedFile.name }}</span>
@@ -182,13 +206,13 @@ onMounted(() => {
         </div>
 
         <div class="flex gap-2">
-          <button @click="handleFileUpload" :disabled="!uploadedFile"
+          <button @click="handleFileUpload" :disabled="!uploadedFile || uploading"
             class="px-4 py-2 bg-green-600 text-white border-0 rounded-lg cursor-pointer text-sm font-medium hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
-            Tải lên
+            {{ uploading ? 'Đang tải lên...' : 'Tải lên' }}
           </button>
 
-          <button v-if="uploadedFile" @click="clearFile"
-            class="px-4 py-2 bg-gray-500 text-white border-0 rounded-lg cursor-pointer text-sm font-medium hover:bg-gray-600 transition-colors">
+          <button v-if="uploadedFile" @click="clearFile" :disabled="uploading"
+            class="px-4 py-2 bg-gray-500 text-white border-0 rounded-lg cursor-pointer text-sm font-medium hover:bg-gray-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
             Hủy
           </button>
         </div>

@@ -40,6 +40,7 @@ export const API_ENDPOINTS = {
     TOGGLE_ACTIVE: (id: number | string) => `/v1/vehicles/${id}/active`
   },
   METER_READINGS: {
-    LIST: "/v1/meter_reading"
+    LIST: "/v1/meter_reading",
+    IMPORT: "/v1/meter_reading/import/xlsx"
   }
 } as const

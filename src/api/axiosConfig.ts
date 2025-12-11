@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
 import qs from "qs"
 class axiosConfig {
@@ -37,24 +37,26 @@ class axiosConfig {
 		return this._instance
 	}
 
-	get<T = any>(path: string, params?: Record<string, any>): Promise<T> {
-		return this.axiosInstance.get(path, { params })
+	get<T = any>(path: string, params?: Record<string, any>, config?: AxiosRequestConfig): Promise<T> {
+		const cfg: AxiosRequestConfig = { params, ...(config || {}) }
+		return this.axiosInstance.get(path, cfg)
 	}
 
-	post<T = any>(path: string, body?: any): Promise<T> {
-		return this.axiosInstance.post(path, body)
+	post<T = any>(path: string, body?: any, config?: AxiosRequestConfig): Promise<T> {
+		return this.axiosInstance.post(path, body, config)
 	}
 
-	put<T = any>(path: string, body?: any): Promise<T> {
-		return this.axiosInstance.put(path, body)
+	put<T = any>(path: string, body?: any, config?: AxiosRequestConfig): Promise<T> {
+		return this.axiosInstance.put(path, body, config)
 	}
 
-	patch<T = any>(path: string, body?: any): Promise<T> {
-		return this.axiosInstance.patch(path, body)
+	patch<T = any>(path: string, body?: any, config?: AxiosRequestConfig): Promise<T> {
+		return this.axiosInstance.patch(path, body, config)
 	}
 
-	delete<T = any>(path: string, params?: Record<string, any>): Promise<T> {
-		return this.axiosInstance.delete(path, { params })
+	delete<T = any>(path: string, params?: Record<string, any>, config?: AxiosRequestConfig): Promise<T> {
+		const cfg: AxiosRequestConfig = { params, ...(config || {}) }
+		return this.axiosInstance.delete(path, cfg)
 	}
 }
 

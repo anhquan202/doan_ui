@@ -1,3 +1,17 @@
+export interface ContractInfo {
+  id: number
+  contract_code: string
+  start_date_formatted: string
+  end_date_formatted: string
+  term_months: number
+  deposit: number
+  room_name: string
+  representative_name: string
+  customers_count: number
+  status: string
+  status_text: string
+}
+
 export interface ElectricReading {
   id: number
   start_num: number
@@ -8,6 +22,7 @@ export interface ElectricReading {
   year: number
   created_at: string
   updated_at: string
+  contract: ContractInfo
 }
 
 export interface WaterReading {
@@ -20,14 +35,15 @@ export interface WaterReading {
   year: number
   created_at: string
   updated_at: string
+  contract: ContractInfo
 }
 
 export interface MeterReading {
   contract_id: number
   contract_code: string
   fee_services: number
-  electric_readings: ElectricReading[]
-  water_readings: WaterReading[]
+  electric_reading: ElectricReading
+  water_reading: WaterReading
 }
 
 export interface MeterReadingMeta {
