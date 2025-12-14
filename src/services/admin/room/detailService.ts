@@ -28,6 +28,7 @@ interface RoomDetail {
     utility_id: number
     is_required: boolean
     utility_type: string
+    utility_type_label: string
     fee: number
   }[]
 }

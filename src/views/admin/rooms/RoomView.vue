@@ -202,7 +202,7 @@ const getStatusInfo = (status: string | null) => {
 
           <tr v-for="(room, idx) in rooms" :key="room.id" :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
             <td class="px-4 py-3 font-medium">{{ room.room_name }}</td>
-            <td class="px-4 py-3 capitalize">{{ room.room_type }}</td>
+            <td class="px-4 py-3 capitalize">{{ room.room_type_label }}</td>
             <td class="px-4 py-3">{{ room.price?.toLocaleString('vi-VN') }}₫</td>
             <td class="px-4 py-3">
               <span v-if="room.status" :class="[

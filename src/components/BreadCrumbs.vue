@@ -1,5 +1,5 @@
 <template>
-  <nav class="flex items-center space-x-2 text-sm mb-6" aria-label="Breadcrumb">
+  <nav class="flex items-center space-x-2 text-sm px-6" aria-label="Breadcrumb">
     <ol class="flex items-center space-x-2">
       <li>
         <router-link to="/" class="text-blue-600 hover:text-blue-800 hover:underline transition">

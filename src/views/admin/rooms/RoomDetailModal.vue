@@ -80,7 +80,7 @@ defineProps<{
               <div class="flex items-start justify-between">
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <h4 class="font-semibold text-gray-800">{{ utility.utility_type }}</h4>
+                    <h4 class="font-semibold text-gray-800">{{ utility.utility_type_label }}</h4>
                     <span v-if="utility.is_required"
                       class="px-2 py-0.5 bg-orange-200 text-orange-800 text-xs rounded-full font-semibold">
                       Bắt buộc

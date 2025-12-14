@@ -9,6 +9,7 @@ export type Supply = {
 export type Utility = {
   id: number;
   utility_type: string;
+  utility_type_label: string;
   description: string;
   is_required: boolean;
 };
@@ -16,6 +17,7 @@ export type Utility = {
 export type Room = {
   id: number;
   room_type: string;
+  room_type_label: string;
   room_name: string;
   status: string | null;
   price: number;

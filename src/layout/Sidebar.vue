@@ -27,8 +27,8 @@
           <Transition name="fade">
             <div v-if="openMenus[item.id]" class="ml-4 mt-1 space-y-1">
               <RouterLink v-for="child in item.children" :key="child.id" :to="child.link"
-                class="block text-sm text-gray-600 px-4 py-2 hover:bg-gray-100 rounded-lg"
-                active-class="bg-gray-100 text-blue-600">
+                class="block px-4 py-2 rounded-lg text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+                active-class="!bg-blue-500 !text-white hover:!bg-blue-600">
                 {{ child.label }}
               </RouterLink>
             </div>
@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Building2, ChevronDown, ClipboardList, Clock, FileText, Motorbike, Rss, Users } from 'lucide-vue-next'
+import { Building2, ChevronDown, ClipboardList, Clock, FileText, Motorbike, Rss, Settings2, Users } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { APP_URL } from '@/constants/appUrl'
 
@@ -61,28 +61,10 @@ const menuItems = ref([
     link: `/${APP_URL.ROOM}`
   },
   {
-    id: 'supplies',
-    label: 'Quản lý vật tư',
-    icon: ClipboardList,
-    link: `/${APP_URL.SUPPLY}`
-  },
-  {
-    id: 'utilities',
-    label: 'Quản lý tiện ích',
-    icon: Rss,
-    link: `/${APP_URL.UTILITY}`
-  },
-  {
     id: 'users',
     label: 'Quản lý con người',
     icon: Users,
     link: '/customers'
-  },
-  {
-    id: 'vehicles',
-    label: 'Quản lý phương tiện',
-    icon: Motorbike,
-    link: '/vehicles'
   },
   {
     id: 'contracts',
@@ -96,6 +78,31 @@ const menuItems = ref([
     icon: Clock,
     link: `/meter-readings`
   },
+  {
+    id: 'settings',
+    label: 'Cài đặt',
+    icon: Settings2,
+    children: [
+      {
+        id: 'supplies',
+        label: 'Quản lý vật tư',
+        icon: ClipboardList,
+        link: `/${APP_URL.SUPPLY}`
+      },
+      {
+        id: 'utilities',
+        label: 'Quản lý tiện ích',
+        icon: Rss,
+        link: `/${APP_URL.UTILITY}`
+      },
+      {
+        id: 'vehicles',
+        label: 'Quản lý phương tiện',
+        icon: Motorbike,
+        link: '/vehicles'
+      },
+    ]
+  }
 ])
 
 const openMenus = ref({})
