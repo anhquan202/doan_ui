@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Building2, ChevronDown, ClipboardList, Clock, FileText, Motorbike, Rss, Settings2, Users } from 'lucide-vue-next'
+import { Building2, ChevronDown, ClipboardList, Clock, FileText, Motorbike, Rss, Settings2, Users, LayoutDashboard } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { APP_URL } from '@/constants/appUrl'
 
@@ -54,6 +54,12 @@ const props = defineProps({ isOpen: Boolean })
 const emit = defineEmits(['toggleSidebar'])
 
 const menuItems = ref([
+  {
+    id: 'rooms',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    link: `/dashboard`
+  },
   {
     id: 'rooms',
     label: 'Quản lý phòng trọ',

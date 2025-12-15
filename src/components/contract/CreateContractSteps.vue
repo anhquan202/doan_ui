@@ -209,6 +209,12 @@ type Customer = {
   is_represent: boolean
 }
 
+const fieldLabelMap: Record<string, string> = {
+  identity_code: "Mã định danh (CCCD)",
+  phone: "Số điện thoại",
+  email: "Email",
+}
+
 const currentStep = ref(0)
 
 const form = reactive({
@@ -234,6 +240,19 @@ function next() {
 
 function prev() {
   if (currentStep.value > 0) currentStep.value--
+}
+
+function getFirstErrorWithLabel(errors: Record<string, any>) {
+  const field = Object.keys(errors)[0]
+  const rawMessage = errors[field]
+
+  const message = Array.isArray(rawMessage)
+    ? rawMessage[0]
+    : rawMessage
+
+  const label = fieldLabelMap[field] || field
+
+  return `${label} ${message}`
 }
 
 const selectedRoom = ref<any>(null)
@@ -287,8 +306,11 @@ async function submit() {
       toastError("Có lỗi xảy ra khi tạo hợp đồng")
     }
   } catch (err: any) {
-    console.error("Create contract error:", err)
-    toastError("Lỗi ngoài ý muốn")
+    const errors = err?.errors || err?.response?.data?.errors
+    if (errors) {
+      toastError(getFirstErrorWithLabel(errors))
+      return
+    }
   }
 }
 </script>

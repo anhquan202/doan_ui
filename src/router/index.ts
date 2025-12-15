@@ -16,6 +16,7 @@ import EditCustomerView from '@/views/admin/customers/EditCustomerView.vue'
 import ContractDetailView from '@/views/admin/contracts/ContractDetailView.vue'
 import VehicleView from '@/views/admin/vehicles/VehicleView.vue'
 import MeterReadingsView from '@/views/admin/meter_readings/MeterReadingsView.vue'
+import DashBoardView from '@/views/admin/dashboard/DashBoardView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
       redirect: { name: 'rooms' },
       children: [
+        {
+          path: 'dashboard',
+          name: 'dashboard',
+          component: DashBoardView
+        },
         {
           path: APP_URL.ROOM,
           name: 'rooms',

@@ -42,7 +42,7 @@
                   <div class="flex items-center gap-2 text-sm text-gray-600">
                     <span
                       class="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 text-purple-700 font-medium">
-                      {{ r.room_type }}
+                      {{ r.room_type_label }}
                     </span>
                     <span class="text-blue-600 font-semibold">
                       {{ formatPrice(r.price) }}
@@ -111,7 +111,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white rounded-lg p-3 shadow-sm">
                   <div class="text-xs text-gray-500 mb-1">Loại phòng</div>
-                  <div class="font-semibold text-gray-900">{{ selected.room_type }}</div>
+                  <div class="font-semibold text-gray-900">{{ selected.room_type_label }}</div>
                 </div>
                 <div class="bg-white rounded-lg p-3 shadow-sm">
                   <div class="text-xs text-gray-500 mb-1">Giá thuê</div>
