@@ -24,11 +24,16 @@
 
     <!-- Step content -->
     <div class="step-panel p-6 rounded-xl shadow-sm border border-gray-200 bg-white">
+      <div v-if="stepErrors[currentStep]" class="text-red-600 bg-red-50 px-4 py-2 mb-4 rounded-lg text-sm">
+        {{ stepErrors[currentStep] }}
+      </div>
       <RoomSelector v-if="currentStep === 0" @selected="onRoomSelected" :selectedRoomId="form.roomId" />
 
-      <CustomersForm v-if="currentStep === 1" :customers="form.customers" @update="val => form.customers = val" />
+      <CustomersForm v-if="currentStep === 1" :max_customers="max_customers" :customers="form.customers"
+        @update="(customers) => form.customers = customers" />
 
-      <SelectedTimeContractForm v-if="currentStep === 2" @next="onTimeSelected" />
+      <SelectedTimeContractForm v-if="currentStep === 2"
+        @next="(payload) => { form.startDate = payload.start_date; form.termMonths = payload.term_months }" />
 
       <div v-if="currentStep === 3" class="space-y-6 max-w-4xl mx-auto">
         <div class="text-center mb-6">
@@ -148,6 +153,13 @@
                   </p>
                 </div>
               </div>
+
+              <div class="mt-4 pt-4 border-t border-purple-200">
+                <p class="text-xs text-gray-500 mb-2">Phương tiện</p>
+                <div class="bg-white bg-opacity-50 rounded p-3 text-sm">
+                  <p><span class="font-medium text-gray-700">Biển số:</span> {{ c.vehicle?.plateNumber || 'N/A' }}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -172,16 +184,16 @@
     </div>
 
     <div class="flex items-center justify-between mt-6">
-      <button class="btn" :disabled="currentStep === 0" @click="prev">
+      <button class="btn" :disabled="currentStep === 0 || isLoading" @click="prev">
         ← Quay lại
       </button>
 
-      <button v-if="currentStep < 3" class="btn-primary" @click="next" :disabled="currentStep === 0 && !form.roomId">
+      <button v-if="currentStep < 3" class="btn-primary" @click="handleNext" :disabled="isLoading">
         Tiếp tục →
       </button>
 
-      <button v-else class="btn-primary" @click="submit">
-        ✓ Hoàn tất
+      <button v-else class="btn-primary" @click="submit" :disabled="isLoading">
+        {{ isLoading ? "Đang xử lý..." : "✓ Hoàn tất" }}
       </button>
     </div>
   </div>
@@ -193,9 +205,12 @@ import RoomSelector from "./RoomSelector.vue"
 import CustomersForm from "./CustomersForm.vue"
 import SelectedTimeContractForm from "./SelectedTimeContractForm.vue"
 import dayjs from "dayjs"
-import { createContractService } from "@/services/admin/contracts/createContractService"
+import { step1Service } from "@/services/admin/contract_wizard/step1Service"
+import { step2Service } from "@/services/admin/contract_wizard/step2Service"
+import { step3Service } from "@/services/admin/contract_wizard/step3Service"
 import { toastError, toastSuccess } from "@/helpers/toast"
 import { useRouter } from 'vue-router'
+import type { Step1Customer } from "@/types/ContractWizard"
 
 type Customer = {
   identity_code: string
@@ -207,6 +222,10 @@ type Customer = {
   gender: number
   date_of_birth: string
   is_represent: boolean
+  vehicle: {
+    vehicleId: number
+    plateNumber: string
+  }
 }
 
 const fieldLabelMap: Record<string, string> = {
@@ -216,6 +235,8 @@ const fieldLabelMap: Record<string, string> = {
 }
 
 const currentStep = ref(0)
+const isLoading = ref(false)
+const stepErrors = ref<Record<number, string>>({})
 
 const form = reactive({
   roomId: 0 as number,
@@ -223,7 +244,8 @@ const form = reactive({
   termMonths: 6,
   deposit: 0 as number,
   customers: [] as Customer[],
-  utilities: [] as { utility_id?: number; status?: number }[]
+  utilities: [] as { utility_id?: number; status?: number }[],
+  draftId: null as number | null
 })
 
 const stepLabels = ["Chọn phòng", "Khách thuê", "Thời gian thuê", "Kiểm tra"]
@@ -242,20 +264,26 @@ function prev() {
   if (currentStep.value > 0) currentStep.value--
 }
 
-function getFirstErrorWithLabel(errors: Record<string, any>) {
-  const field = Object.keys(errors)[0]
-  const rawMessage = errors[field]
-
-  const message = Array.isArray(rawMessage)
-    ? rawMessage[0]
-    : rawMessage
-
-  const label = fieldLabelMap[field] || field
-
-  return `${label} ${message}`
+async function handleNext() {
+  if (currentStep.value === 0) {
+    // Chỉ kiểm tra phòng được chọn
+    if (!form.roomId) {
+      stepErrors.value[0] = "Vui lòng chọn phòng"
+      return
+    }
+    stepErrors.value[0] = ""
+    next()
+  } else if (currentStep.value === 1) {
+    // Call step1Service
+    await submitStep1()
+  } else if (currentStep.value === 2) {
+    // Call step2Service
+    await submitStep2()
+  }
 }
 
 const selectedRoom = ref<any>(null)
+const max_customers = ref<number>(0)
 function onRoomSelected(room: any) {
   selectedRoom.value = room
   form.roomId = room?.id ?? null
@@ -264,53 +292,121 @@ function onRoomSelected(room: any) {
     room?.utilities?.map((u: any) => ({
       utility_id: u.id
     })) || []
+  max_customers.value = room.max_customers
 }
 
+// Step 1: Submit customers
+async function submitStep1() {
+  if (isLoading.value) return
 
-function onTimeSelected(payload: { start_date: string; term_months: number }) {
-  form.startDate = payload.start_date
-  form.termMonths = payload.term_months
-  next()
-}
+  if (form.customers.length === 0) {
+    stepErrors.value[1] = "Phải có ít nhất một khách thuê"
+    return
+  }
 
-async function submit() {
-  const payload = {
-    start_date: form.startDate,
-    term_months: form.termMonths,
-    deposit: form.deposit,
-    room_id: form.roomId!,
-    customers: form.customers.map(c => ({
-      identity_code: c.identity_code,
-      first_name: c.first_name,
-      last_name: c.last_name,
+  if (!form.customers.some(t => t.is_represent)) {
+    stepErrors.value[1] = "Phải chọn ít nhất một khách đại diện hợp đồng"
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const payload: Step1Customer[] = form.customers.map(c => ({
+      identityCode: c.identity_code,
+      firstName: c.first_name,
+      lastName: c.last_name,
       email: c.email,
       phone: c.phone,
       address: c.address,
       gender: c.gender,
-      date_of_birth: c.date_of_birth,
-      is_represent: c.is_represent
-    })),
-    utilities: form.utilities
-      .filter(u => u.utility_id !== undefined && u.utility_id !== null)
-      .map(u => ({
-        utility_id: u.utility_id!
-      }))
-  }
+      dateOfBirth: c.date_of_birth,
+      isRepresent: c.is_represent,
+      vehicle: {
+        vehicleId: c.vehicle.vehicleId,
+        plateNumber: c.vehicle.plateNumber
+      }
+    }))
 
+    const step1Payload = {
+      roomId: form.roomId,
+      draftId: form.draftId || undefined,
+      customers: payload
+    }
+
+    const res = await step1Service(step1Payload)
+
+    if (res.success) {
+      console.log(res.data);
+      
+      form.draftId = res.data.draft_id
+      stepErrors.value[1] = ""
+      toastSuccess("Lưu thông tin khách thuê thành công")
+      next()
+    } else {
+      stepErrors.value[1] = "Lỗi khi lưu thông tin khách"
+    }
+  } catch (err: any) {
+    const error = err.message
+    stepErrors.value[1] = error || "Có lỗi xảy ra khi lưu thông tin khách"
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Step 2: Submit time and deposit
+async function submitStep2() {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  
   try {
-    const res = await createContractService(payload)
+    const step2Payload = {
+      draftId: form.draftId!,
+      startDate: form.startDate,
+      termMonths: form.termMonths,
+      deposit: form.deposit
+    }
+
+    const res = await step2Service(step2Payload)
+    
+    if (res.success) {
+      stepErrors.value[2] = ""
+      toastSuccess("Lưu thông tin kỳ hạn thành công")
+      next()
+    } else {
+      stepErrors.value[2] = "Lỗi khi lưu thông tin kỳ hạn"
+    }
+  } catch (err: any) {
+    const errors = err.message
+    stepErrors.value[2] = errors || "Có lỗi xảy ra khi lưu thông tin kỳ hạn"
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Step 3: Final submit
+async function submit() {
+  if (isLoading.value || !form.draftId) return
+
+  isLoading.value = true
+  try {
+    const step3Payload = {
+      draftId: form.draftId
+    }
+
+    const res = await step3Service(step3Payload)
+    
     if (res.success) {
       toastSuccess("Tạo hợp đồng thành công")
       await router.push({ name: 'contracts' })
     } else {
-      toastError("Có lỗi xảy ra khi tạo hợp đồng")
+      toastError("Lỗi khi tạo hợp đồng")
     }
   } catch (err: any) {
-    const errors = err?.errors || err?.response?.data?.errors
-    if (errors) {
-      toastError(getFirstErrorWithLabel(errors))
-      return
-    }
+    const errors = err.message
+    toastError(errors || "Có lỗi xảy ra khi tạo hợp đồng")
+  } finally {
+    isLoading.value = false
   }
 }
 </script>

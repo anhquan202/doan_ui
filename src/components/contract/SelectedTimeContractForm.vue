@@ -54,15 +54,6 @@
           <p>• Kỳ hạn: <span class="font-semibold">{{ form.term_months }} tháng</span></p>
         </div>
       </div>
-
-      <!-- Nút tiếp tục -->
-      <button :disabled="!isValid" @click="handleNext"
-        class="w-full py-3 rounded-xl font-semibold text-white text-sm cursor-pointer transition-all duration-300"
-        :class="isValid
-          ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:scale-[1.02]'
-          : 'bg-gray-300 cursor-not-allowed opacity-60'">
-        Tiếp tục →
-      </button>
     </div>
   </div>
 </template>

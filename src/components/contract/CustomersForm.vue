@@ -1,160 +1,35 @@
-<template>
-  <div class="space-y-6">
-    <h4 class="font-semibold text-lg mb-4 text-gray-800">Khách thuê</h4>
-
-    <Form @submit="apply" v-slot="{ errors }">
-      <div v-if="fields.length === 0" class="text-gray-500 italic bg-gray-50 p-4 rounded-lg">
-        Chưa có khách thuê
-      </div>
-
-      <div v-for="(t, idx) in fields" :key="idx"
-        class="bg-gray-50 p-4 rounded-lg mb-3 hover:bg-gray-100 transition-colors">
-        <div class="space-y-3">
-
-          <div>
-            <Field :name="`customers[${idx}].identity_code`" v-model="t.identity_code" placeholder="CMND/CCCD"
-              :rules="required"
-              class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-            <ErrorMessage :name="`customers[${idx}].identity_code`" class="text-red-500 text-sm mt-1 block" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <Field :name="`customers[${idx}].first_name`" v-model="t.first_name" placeholder="Họ" :rules="required"
-                class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-              <ErrorMessage :name="`customers[${idx}].first_name`" class="text-red-500 text-sm mt-1 block" />
-            </div>
-            <div>
-              <Field :name="`customers[${idx}].last_name`" v-model="t.last_name" placeholder="Tên" :rules="required"
-                class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-              <ErrorMessage :name="`customers[${idx}].last_name`" class="text-red-500 text-sm mt-1 block" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <Field :name="`customers[${idx}].email`" v-model="t.email" placeholder="Email" :rules="emailRules"
-                class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-              <ErrorMessage :name="`customers[${idx}].email`" class="text-red-500 text-sm mt-1 block" />
-            </div>
-            <div>
-              <Field :name="`customers[${idx}].phone`" v-model="t.phone" placeholder="Số điện thoại" :rules="required"
-                class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-              <ErrorMessage :name="`customers[${idx}].phone`" class="text-red-500 text-sm mt-1 block" />
-            </div>
-          </div>
-
-          <div>
-            <Field :name="`customers[${idx}].address`" v-model="t.address" placeholder="Địa chỉ" :rules="required"
-              class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-            <ErrorMessage :name="`customers[${idx}].address`" class="text-red-500 text-sm mt-1 block" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-gray-700 mb-1 font-medium">Giới tính</label>
-              <div class="flex gap-2">
-                <button type="button" :class="[
-                  'px-4 py-2 rounded-lg border transition',
-                  t.gender === 1
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white border-gray-300 text-gray-700'
-                ]" @click="t.gender = 1">
-                  Nam
-                </button>
-                <button type="button" :class="[
-                  'px-4 py-2 rounded-lg border transition',
-                  t.gender === 2
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white border-gray-300 text-gray-700'
-                ]" @click="t.gender = 2">
-                  Nữ
-                </button>
-              </div>
-              <ErrorMessage :name="`customers[${idx}].gender`" class="text-red-500 text-sm mt-1 block" />
-            </div>
-
-            <div>
-              <label class="block text-gray-700 mb-1 font-medium">Ngày sinh</label>
-              <Field type="date" :name="`customers[${idx}].date_of_birth`" v-model="t.date_of_birth" :rules="required"
-                class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow" />
-              <ErrorMessage :name="`customers[${idx}].date_of_birth`" class="text-red-500 text-sm mt-1 block" />
-            </div>
-          </div>
-
-          <label class="flex items-center gap-2 mt-3 cursor-pointer">
-            <input type="radio" :checked="t.is_represent" @change="setRepresentative(idx)"
-              class="w-4 h-4 text-blue-500 cursor-pointer" />
-            <span class="text-gray-700">Đại diện hợp đồng</span>
-          </label>
-
-          <button type="button"
-            class="mt-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-            @click="remove(idx)">
-            Xóa khách này
-          </button>
-        </div>
-      </div>
-
-      <p v-if="repError" class="text-red-600 text-sm mb-3 bg-red-50 p-3 rounded-lg">
-        {{ repError }}
-      </p>
-
-      <div class="mt-4 flex gap-3">
-        <button type="button"
-          class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-          @click="add">
-          + Thêm khách
-        </button>
-        <button type="submit"
-          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
-          Áp dụng
-        </button>
-      </div>
-    </Form>
-
-    <!-- Thông tin đã ghi nhận -->
-    <div v-if="appliedCustomers.length > 0" class="mt-6 border-t pt-6">
-      <h5 class="font-semibold text-md mb-3 text-gray-800">Thông tin đã ghi nhận</h5>
-      <div class="space-y-3">
-        <div v-for="(customer, idx) in appliedCustomers" :key="idx" class="bg-blue-50 p-4 rounded-lg">
-          <div class="flex items-start justify-between">
-            <div class="space-y-1">
-              <p class="font-medium text-gray-800">
-                {{ customer.first_name }} {{ customer.last_name }}
-                <span v-if="customer.is_represent" class="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded">
-                  Đại diện
-                </span>
-              </p>
-              <p class="text-sm text-gray-600">CMND/CCCD: {{ customer.identity_code }}</p>
-              <p class="text-sm text-gray-600">Email: {{ customer.email }}</p>
-              <p class="text-sm text-gray-600">SĐT: {{ customer.phone }}</p>
-              <p class="text-sm text-gray-600">Địa chỉ: {{ customer.address }}</p>
-              <p class="text-sm text-gray-600">
-                Giới tính: {{ customer.gender === 1 ? 'Nam' : 'Nữ' }} |
-                Ngày sinh: {{ customer.date_of_birth }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 
-const props = defineProps<{ customers: any[] }>()
-const emit = defineEmits(['update'])
+const props = defineProps<{ customers: any[], max_customers: number }>()
 
-const fields = reactive((props.customers || []).map(c => ({ ...c })))
-const repError = ref("")
-const appliedCustomers = ref<any[]>([])
+const isMaxReached = computed(() => appliedCustomers.value.length >= props.max_customers)
+
+const emit = defineEmits(['update', 'edit'])
+
+const currentEditIndex = ref<number | null>(null)
+const currentForm = reactive({
+  identity_code: '',
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  address: '',
+  gender: null as number | null,
+  date_of_birth: '',
+  is_represent: false,
+  vehicle: {
+    vehicleId: 0,
+    plateNumber: ''
+  }
+})
+
+const appliedCustomers = ref<any[]>((props.customers || []).map(c => ({ ...c })))
+const formErrors = ref<Record<string, string>>({})
 
 watch(() => props.customers, v => {
-  fields.splice(0, fields.length, ...(v || []).map(c => ({ ...c })))
+  appliedCustomers.value = (v || []).map(c => ({ ...c }))
 })
 
 const required = (value: any) => {
@@ -169,68 +44,246 @@ const emailRules = (value: any) => {
   return true
 }
 
+function clearForm() {
+  currentForm.identity_code = ''
+  currentForm.first_name = ''
+  currentForm.last_name = ''
+  currentForm.email = ''
+  currentForm.phone = ''
+  currentForm.address = ''
+  currentForm.gender = null
+  currentForm.date_of_birth = ''
+  currentForm.is_represent = false
+  currentForm.vehicle.vehicleId = 0
+  currentForm.vehicle.plateNumber = ''
+  currentEditIndex.value = null
+  formErrors.value = {}
+}
+
 function add() {
-  fields.push({
-    identity_code: '',
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    address: '',
-    gender: null,
-    date_of_birth: '',
-    is_represent: false
-  })
+  clearForm()
 }
 
-function remove(i: number) {
-  fields.splice(i, 1)
-}
+function addCustomer() {
+  if (!validateForm()) return
 
-function setRepresentative(idx: number) {
-  fields.forEach((t, i) => (t.is_represent = i === idx))
-}
-
-function apply() {
-  if (fields.length === 0) {
-    repError.value = "Phải có ít nhất một khách thuê"
-    return
-  }
-
-  if (!fields.some(t => t.is_represent)) {
-    repError.value = "Phải chọn ít nhất một khách đại diện hợp đồng"
-    return
-  }
-
-  for (let i = 0; i < fields.length; i++) {
-    const f = fields[i]
-    if (!f.identity_code || !f.first_name || !f.last_name ||
-      !f.email || !f.phone || !f.address ||
-      !f.gender || !f.date_of_birth) {
-      repError.value = `Vui lòng điền đầy đủ thông tin cho khách thứ ${i + 1}`
-      return
+  const customerData = {
+    identity_code: currentForm.identity_code,
+    first_name: currentForm.first_name,
+    last_name: currentForm.last_name,
+    email: currentForm.email,
+    phone: currentForm.phone,
+    address: currentForm.address,
+    gender: currentForm.gender,
+    date_of_birth: currentForm.date_of_birth,
+    is_represent: currentForm.is_represent,
+    vehicle: {
+      vehicleId: currentForm.vehicle.vehicleId,
+      plateNumber: currentForm.vehicle.plateNumber
     }
   }
 
-  repError.value = ""
+  if (currentEditIndex.value !== null) {
+    // Update existing
+    appliedCustomers.value[currentEditIndex.value] = customerData
+  } else {
+    // Add new
+    appliedCustomers.value.push(customerData)
+  }
 
-  appliedCustomers.value = fields.map(t => ({ ...t }))
+  emit('update', appliedCustomers.value)
+  clearForm()
+}
 
-  emit("update", appliedCustomers.value)
+function validateForm() {
+  const errors: Record<string, string> = {}
+
+  if (!currentForm.identity_code) errors.identity_code = 'CMND/CCCD không được để trống'
+  if (!currentForm.first_name) errors.first_name = 'Họ không được để trống'
+  if (!currentForm.last_name) errors.last_name = 'Tên không được để trống'
+  if (!currentForm.email) errors.email = 'Email không được để trống'
+  else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(currentForm.email)) errors.email = 'Email không hợp lệ'
+  }
+  if (!currentForm.phone) errors.phone = 'Số điện thoại không được để trống'
+  if (!currentForm.address) errors.address = 'Địa chỉ không được để trống'
+  if (!currentForm.gender) errors.gender = 'Giới tính không được để trống'
+  if (!currentForm.date_of_birth) errors.date_of_birth = 'Ngày sinh không được để trống'
+  if (!currentForm.vehicle?.vehicleId) errors.vehicleId = 'Loại phương tiện không được để trống'
+  if (!currentForm.vehicle?.plateNumber) errors.plateNumber = 'Biển số xe không được để trống'
+
+  formErrors.value = errors
+  return Object.keys(errors).length === 0
+}
+
+function editCustomer(idx: number) {
+  currentEditIndex.value = idx
+  const customer = appliedCustomers.value[idx]
+  currentForm.identity_code = customer.identity_code
+  currentForm.first_name = customer.first_name
+  currentForm.last_name = customer.last_name
+  currentForm.email = customer.email
+  currentForm.phone = customer.phone
+  currentForm.address = customer.address
+  currentForm.gender = customer.gender
+  currentForm.date_of_birth = customer.date_of_birth
+  currentForm.is_represent = customer.is_represent
+  currentForm.vehicle.vehicleId = customer.vehicle?.vehicleId || 0
+  currentForm.vehicle.plateNumber = customer.vehicle?.plateNumber || ''
+}
+
+function removeCustomer(idx: number) {
+  appliedCustomers.value.splice(idx, 1)
+  emit('update', appliedCustomers.value)
+  if (currentEditIndex.value === idx) clearForm()
+}
+
+function setRepresentative(idx: number) {
+  appliedCustomers.value.forEach((t, i) => (t.is_represent = i === idx))
+  currentForm.is_represent = true
 }
 </script>
 
-<style scoped>
-.btn {
-  padding: .4rem .8rem;
-  border-radius: .35rem;
-  background: #e5e7eb;
-}
+<style scoped></style>
 
-.btn-primary {
-  background: #2563eb;
-  color: white;
-  padding: .4rem .8rem;
-  border-radius: .35rem;
-}
-</style>
+<template>
+  <div class="space-y-6">
+    <h4 class="font-semibold text-lg mb-4 text-gray-800">Khách thuê (tối đa {{ props.max_customers }} người)</h4>
+
+    <!-- Form thêm/edit khách -->
+    <div class="bg-white border-2 border-blue-200 rounded-xl p-6 space-y-4">
+      <h5 class="font-semibold text-md text-gray-800">{{ currentEditIndex !== null ? 'Chỉnh sửa khách' : 'Thêm khách mới' }}</h5>
+
+      <div v-if="Object.keys(formErrors).length > 0" class="bg-red-50 border border-red-200 rounded-lg p-3">
+        <p v-for="(error, key) in formErrors" :key="key" class="text-red-600 text-sm">• {{ error }}</p>
+      </div>
+
+      <div>
+        <input v-model="currentForm.identity_code" placeholder="CMND/CCCD"
+          class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <input v-model="currentForm.first_name" placeholder="Họ"
+          class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+        <input v-model="currentForm.last_name" placeholder="Tên"
+          class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <input v-model="currentForm.email" placeholder="Email"
+          class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+        <input v-model="currentForm.phone" placeholder="Số điện thoại"
+          class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+      </div>
+
+      <input v-model="currentForm.address" placeholder="Địa chỉ"
+        class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-gray-700 mb-1 font-medium">Giới tính</label>
+          <div class="flex gap-2">
+            <button type="button" :class="[
+              'px-4 py-2 rounded-lg border transition flex-1',
+              currentForm.gender === 1
+                ? 'bg-blue-500 text-white border-blue-500'
+                : 'bg-white border-gray-300 text-gray-700'
+            ]" @click="currentForm.gender = 1">
+              Nam
+            </button>
+            <button type="button" :class="[
+              'px-4 py-2 rounded-lg border transition flex-1',
+              currentForm.gender === 2
+                ? 'bg-blue-500 text-white border-blue-500'
+                : 'bg-white border-gray-300 text-gray-700'
+            ]" @click="currentForm.gender = 2">
+              Nữ
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-gray-700 mb-1 font-medium">Ngày sinh</label>
+          <input type="date" v-model="currentForm.date_of_birth"
+            class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Loại phương tiện</label>
+          <select :value="String(currentForm.vehicle.vehicleId)" @change="(e) => currentForm.vehicle.vehicleId = parseInt((e.target as HTMLSelectElement).value)"
+            class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300">
+            <option value="0" disabled>-- Chọn phương tiện --</option>
+            <option value="1">Xe máy</option>
+            <option value="2">Ô tô</option>
+            <option value="3">Xe đạp</option>
+            <option value="4">Khác</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Biển số xe</label>
+          <input v-model="currentForm.vehicle.plateNumber" placeholder="Biển số xe"
+            class="w-full bg-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300" />
+        </div>
+      </div>
+
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" v-model="currentForm.is_represent" class="w-4 h-4 text-blue-500 cursor-pointer" />
+        <span class="text-gray-700">Đại diện hợp đồng</span>
+      </label>
+
+      <div class="flex gap-3 pt-3">
+        <button type="button" @click="addCustomer"
+          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex-1">
+          {{ currentEditIndex !== null ? 'Cập nhật' : 'Lưu khách' }}
+        </button>
+        <button v-if="currentEditIndex !== null" type="button" @click="clearForm"
+          class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+          Hủy
+        </button>
+      </div>
+    </div>
+
+    <!-- Danh sách khách đã thêm -->
+    <div v-if="appliedCustomers.length > 0" class="space-y-3">
+      <h5 class="font-semibold text-md text-gray-800">Danh sách khách ({{ appliedCustomers.length }}/{{
+        props.max_customers }})</h5>
+      <div class="space-y-3">
+        <div v-for="(customer, idx) in appliedCustomers" :key="idx"
+          class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+          @click="editCustomer(idx)">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="font-medium text-gray-800">
+                {{ customer.first_name }} {{ customer.last_name }}
+                <span v-if="customer.is_represent" class="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                  Đại diện
+                </span>
+              </p>
+              <p class="text-sm text-gray-600">CMND/CCCD: {{ customer.identity_code }}</p>
+              <p class="text-sm text-gray-600">Email: {{ customer.email }}</p>
+              <p class="text-sm text-gray-600">SĐT: {{ customer.phone }}</p>
+              <p class="text-sm text-gray-600">Địa chỉ: {{ customer.address }}</p>
+              <p class="text-sm text-gray-600">
+                Giới tính: {{ customer.gender === 1 ? 'Nam' : 'Nữ' }} | Ngày sinh: {{ customer.date_of_birth }}
+              </p>
+              <p class="text-sm text-gray-600">Biển số: {{ customer.vehicle?.plateNumber || 'N/A' }}</p>
+            </div>
+            <button type="button" @click.stop="removeCustomer(idx)"
+              class="ml-3 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors">
+              Xoá
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="text-gray-500 italic bg-gray-50 p-4 rounded-lg">
+      Chưa có khách thuê
+    </div>
+  </div>
+</template>
