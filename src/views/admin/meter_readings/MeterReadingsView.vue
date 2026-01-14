@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from "vue"
-import { getMeterReadingsService } from "@/services/admin/meter_readings/getMeterReadingsService"
+import { getMonthlyInvoicesService } from "@/services/admin/meter_readings/getMonthlyInvoicesService"
 import { importMeterReadingsService } from "@/services/admin/meter_readings/importMeterReadingsService"
-import type { MeterReading, MeterReadingMeta, MeterReadingParams } from "@/types/MeterReadings"
+import type { MonthlyInvoice, MonthlyInvoiceMeta, MonthlyInvoicesParams } from "@/types/MonthlyInvoices"
 import Paginate from '@/components/Paginate.vue'
 import { useToast } from "vue-toastification"
 
 const toast = useToast()
 
-const meterReadings = ref<MeterReading[]>([])
-const meta = ref<MeterReadingMeta>({
+const invoices = ref<MonthlyInvoice[]>([])
+const meta = ref<MonthlyInvoiceMeta>({
   current_page: 1,
   from: 1,
   to: 10,
@@ -22,11 +22,18 @@ const uploading = ref(false)
 const error = ref("")
 const uploadedFile = ref<File | null>(null)
 
-const filters = reactive<MeterReadingParams>({
+// Get current date, default to current month (will be sent as previous month to API)
+const today = new Date()
+const currentMonth = today.getMonth() + 1
+const currentYear = today.getFullYear()
+
+const filters = reactive<MonthlyInvoicesParams>({
   page: 1,
   per_page: 10,
-  month: new Date().getMonth() + 1,
-  year: new Date().getFullYear(),
+  month: currentMonth,
+  year: currentYear,
+  status: undefined,
+  contract_id: undefined,
 })
 
 const currentPage = ref(1)
@@ -55,16 +62,51 @@ const years = computed(() => {
   return yearList
 })
 
-const fetchMeterReadings = async (page = 1) => {
+const statuses = [
+  { value: "pending", label: "Chưa thanh toán" },
+  { value: "paid", label: "Đã thanh toán" },
+]
+
+// Calculate the actual month/year to send to API (one month earlier)
+const getApiMonth = () => {
+  let month = filters.month ?? currentMonth
+  let year = filters.year ?? currentYear
+
+  month = month - 1
+  if (month === 0) {
+    month = 12
+    year = year - 1
+  }
+
+  return { month, year }
+}
+
+const fetchInvoices = async (page = 1) => {
   loading.value = true
   error.value = ""
   try {
-    const response = await getMeterReadingsService({ ...filters, page })
-    meterReadings.value = response.data.meter_readings
+    const { month, year } = getApiMonth()
+    const params: MonthlyInvoicesParams = {
+      page,
+      per_page: filters.per_page,
+      month,
+      year,
+    }
+    
+    // Only add optional params if they have values
+    if (filters.status) {
+      params.status = filters.status
+    }
+    if (filters.contract_id) {
+      params.contract_id = filters.contract_id
+    }
+
+    const response = await getMonthlyInvoicesService(params)
+    invoices.value = response.data.invoices
     meta.value = response.data.meta
     currentPage.value = response.data.meta.current_page
   } catch (err) {
-    error.value = "Không thể tải dữ liệu chỉ số đồng hồ"
+    error.value = "Không thể tải dữ liệu hóa đơn tháng"
     console.error(err)
   } finally {
     loading.value = false
@@ -72,11 +114,11 @@ const fetchMeterReadings = async (page = 1) => {
 }
 
 const handleSearchSubmit = () => {
-  fetchMeterReadings(1)
+  fetchInvoices(1)
 }
 
 const handleChangePage = (page: number) => {
-  fetchMeterReadings(page)
+  fetchInvoices(page)
 }
 
 const handleFileChange = (event: Event) => {
@@ -106,7 +148,7 @@ const handleFileUpload = async () => {
     toast.success("Tải lên file thành công")
     clearFile()
     // Reload dữ liệu sau khi import thành công
-    await fetchMeterReadings(1)
+    await fetchInvoices(1)
   } catch (err) {
     console.error(err)
     toast.error("Tải lên file thất bại. Vui lòng thử lại")
@@ -128,28 +170,21 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
-const getTotalElectricFee = (reading: MeterReading) => {
-  return reading.electric_reading.total_fee
+const getElectricUsage = (invoice: MonthlyInvoice) => {
+  return invoice.electric_reading.end_num - invoice.electric_reading.start_num
 }
 
-const getTotalWaterFee = (reading: MeterReading) => {
-  return reading.water_reading.total_fee
+const getWaterUsage = (invoice: MonthlyInvoice) => {
+  return invoice.water_reading.end_num - invoice.water_reading.start_num
 }
 
-const getTotalAmount = (reading: MeterReading) => {
-  return getTotalElectricFee(reading) + getTotalWaterFee(reading) + reading.fee_services
-}
-
-const getElectricUsage = (reading: MeterReading) => {
-  return reading.electric_reading.end_num - reading.electric_reading.start_num
-}
-
-const getWaterUsage = (reading: MeterReading) => {
-  return reading.water_reading.end_num - reading.water_reading.start_num
+const getReadingDisplay = (invoice: MonthlyInvoice, type: 'electric' | 'water') => {
+  const reading = type === 'electric' ? invoice.electric_reading : invoice.water_reading
+  return `${reading.start_num} → ${reading.end_num}`
 }
 
 onMounted(() => {
-  fetchMeterReadings()
+  fetchInvoices()
 })
 </script>
 
@@ -158,16 +193,16 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-2xl font-bold tracking-tight text-gray-800">
-        Chỉ số đồng hồ
+        Hóa đơn tháng
       </h2>
     </div>
 
     <!-- Filter Section -->
     <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-      <div class="flex gap-3 flex-wrap items-center">
+      <div class="flex gap-3 flex-wrap items-end">
         <div class="flex items-center gap-2">
           <span class="text-sm font-medium text-gray-700">Tháng:</span>
-          <select v-model="filters.month"
+          <select v-model.number="filters.month"
             class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 bg-white cursor-pointer">
             <option v-for="month in months" :key="month.value" :value="month.value">
               {{ month.label }}
@@ -177,10 +212,21 @@ onMounted(() => {
 
         <div class="flex items-center gap-2">
           <span class="text-sm font-medium text-gray-700">Năm:</span>
-          <select v-model="filters.year"
+          <select v-model.number="filters.year"
             class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 bg-white cursor-pointer">
             <option v-for="year in years" :key="year" :value="year">
               {{ year }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-700">Trạng thái:</span>
+          <select v-model="filters.status"
+            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 bg-white cursor-pointer">
+            <option value="">-- Tất cả --</option>
+            <option v-for="status in statuses" :key="status.value" :value="status.value">
+              {{ status.label }}
             </option>
           </select>
         </div>
@@ -233,7 +279,7 @@ onMounted(() => {
 
     <!-- Table -->
     <div v-else class="rounded-lg overflow-hidden shadow-sm bg-white">
-      <div v-if="meterReadings.length === 0" class="text-center py-16 text-gray-500 text-base">
+      <div v-if="invoices.length === 0" class="text-center py-16 text-gray-500 text-base">
         Không có dữ liệu
       </div>
 
@@ -241,37 +287,79 @@ onMounted(() => {
         <thead class="bg-blue-600 text-white">
           <tr>
             <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Mã hợp đồng</th>
-            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Điện (kWh)</th>
-            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Tiền điện</th>
-            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Nước (m³)</th>
-            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Tiền nước</th>
-            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Phí dịch vụ</th>
-            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Tổng cộng</th>
+            <th class="px-3 py-4 text-left font-semibold text-sm uppercase tracking-wide">Phòng</th>
+            <th class="px-3 py-4 text-center font-semibold text-sm uppercase tracking-wide">Điện</th>
+            <th class="px-3 py-4 text-center font-semibold text-sm uppercase tracking-wide">Nước</th>
+            <th class="px-3 py-4 text-right font-semibold text-sm uppercase tracking-wide">Phí phòng</th>
+            <th class="px-3 py-4 text-center font-semibold text-sm uppercase tracking-wide">Trạng thái</th>
+            <th class="px-3 py-4 text-right font-semibold text-sm uppercase tracking-wide">Tổng cộng</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="reading in meterReadings" :key="reading.contract_id"
+          <tr v-for="invoice in invoices" :key="invoice.id"
             class="border-b border-gray-200 hover:bg-blue-50 transition-colors last:border-b-0">
             <td class="px-3 py-3.5 text-sm text-blue-600 font-semibold">
-              {{ reading.contract_code }}
+              {{ invoice.contract_code }}
             </td>
-            <td class="px-3 py-3.5 text-sm text-gray-700 text-center font-medium">
-              {{ getElectricUsage(reading) }}
+            <td class="px-3 py-3.5 text-sm text-gray-700 font-medium">
+              {{ invoice.room_name }}
             </td>
-            <td class="px-3 py-3.5 text-sm text-gray-700">
-              {{ formatCurrency(getTotalElectricFee(reading)) }}
+            
+            <!-- Điện Column - Compact -->
+            <td class="px-3 py-3.5 text-sm">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between gap-2 text-xs">
+                  <span class="text-gray-500">Cũ:</span>
+                  <span class="font-mono font-semibold text-gray-700">{{ invoice.electric_reading.start_num || 0 }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 text-xs">
+                  <span class="text-gray-500">Mới:</span>
+                  <span class="font-mono font-semibold text-gray-700">{{ invoice.electric_reading.end_num || 0 }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 text-xs border-t border-gray-200 pt-1 mt-0.5">
+                  <span class="text-orange-600 font-medium">{{ getElectricUsage(invoice) }} kWh</span>
+                </div>
+                <div class="text-right font-semibold text-sm text-blue-700 mt-1">
+                  {{ formatCurrency(invoice.electric_fee) }}
+                </div>
+              </div>
             </td>
-            <td class="px-3 py-3.5 text-sm text-gray-700 text-center font-medium">
-              {{ getWaterUsage(reading) }}
+            
+            <!-- Nước Column - Compact -->
+            <td class="px-3 py-3.5 text-sm">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between gap-2 text-xs">
+                  <span class="text-gray-500">Cũ:</span>
+                  <span class="font-mono font-semibold text-gray-700">{{ invoice.water_reading.start_num || 0 }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 text-xs">
+                  <span class="text-gray-500">Mới:</span>
+                  <span class="font-mono font-semibold text-gray-700">{{ invoice.water_reading.end_num || 0 }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 text-xs border-t border-gray-200 pt-1 mt-0.5">
+                  <span class="text-cyan-600 font-medium">{{ getWaterUsage(invoice) }} m³</span>
+                </div>
+                <div class="text-right font-semibold text-sm text-blue-700 mt-1">
+                  {{ formatCurrency(invoice.water_fee) }}
+                </div>
+              </div>
             </td>
-            <td class="px-3 py-3.5 text-sm text-gray-700">
-              {{ formatCurrency(getTotalWaterFee(reading)) }}
+            
+            <td class="px-3 py-3.5 text-sm text-gray-700 text-right font-medium">
+              {{ formatCurrency(invoice.room_fee) }}
             </td>
-            <td class="px-3 py-3.5 text-sm text-yellow-800 bg-yellow-50">
-              {{ formatCurrency(reading.fee_services) }}
+            <td class="px-3 py-3.5 text-sm text-center">
+              <span :class="{
+                'px-2.5 py-1.5 rounded-full text-xs font-semibold inline-block': true,
+                'bg-yellow-100 text-yellow-800': invoice.status === 'pending',
+                'bg-green-100 text-green-800': invoice.status === 'paid',
+                'bg-gray-100 text-gray-800': !['pending', 'paid'].includes(invoice.status)
+              }">
+                {{ invoice.status_text }}
+              </span>
             </td>
-            <td class="px-3 py-3.5 text-sm text-red-700 bg-red-50 font-bold">
-              {{ formatCurrency(getTotalAmount(reading)) }}
+            <td class="px-3 py-3.5 text-sm text-red-700 bg-red-50 font-bold text-right">
+              {{ formatCurrency(invoice.total_amount) }}
             </td>
           </tr>
         </tbody>

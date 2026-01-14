@@ -42,8 +42,10 @@ export const API_ENDPOINTS = {
   METER_READINGS: {
     LIST: "/v1/meter_reading",
     IMPORT: "/v1/meter_reading/import/xlsx"
-  }
-  ,
+  },
+  MONTHLY_INVOICES: {
+    LIST: "/v1/monthly_invoices"
+  },
   DASHBOARD: {
     SUMMARY: '/v1/dashboard/summary'
   }
