@@ -148,7 +148,7 @@ function setRepresentative(idx: number) {
 <style scoped></style>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 w-1/2">
     <h4 class="font-semibold text-lg mb-4 text-gray-800">Khách thuê (tối đa {{ props.max_customers }} người)</h4>
 
     <!-- Form thêm/edit khách -->

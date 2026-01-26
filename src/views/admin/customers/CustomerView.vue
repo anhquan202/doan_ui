@@ -49,12 +49,6 @@ const handleEdit = (customer: Customer) => {
   router.push({ name: 'customers.edit', params: { id: customer.id } })
 }
 
-const handleDelete = (customer: Customer) => {
-  console.log('Delete customer:', customer)
-  if (confirm(`Bạn có chắc chắn muốn xóa khách hàng ${customer.full_name}?`)) {
-  }
-}
-
 onMounted(() => {
   fetchCustomers()
 })
@@ -145,10 +139,6 @@ onMounted(() => {
                     class="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50 transition"
                     title="Chỉnh sửa">
                     <Pencil :size="18" />
-                  </button>
-                  <button @click="handleDelete(customer)"
-                    class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition" title="Xóa">
-                    <Trash2 :size="18" />
                   </button>
                 </div>
               </td>

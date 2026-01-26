@@ -60,15 +60,26 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import { Menu, Home, ChevronDown, User, LogOut } from "lucide-vue-next"
+import { sessionStorageHelper } from '@/helpers/sessionStorageHelper'
 
-const userName = ref("Nguyễn Văn A")
-const userEmail = ref("nguyenvana@example.com")
+const userName = ref("")
+const userEmail = ref("")
 const userRole = ref("Quản trị viên")
-const userInitial = ref(userName.value.charAt(0).toUpperCase())
+const userInitial = ref("")
 const showDropdown = ref(false)
 let hideTimeout = null
+
+onMounted(() => {
+  const user = sessionStorageHelper.getUser()
+  if (user) {
+    const fullName = `${user.first_name} ${user.last_name}`.trim()
+    userName.value = fullName
+    userEmail.value = user.email
+    userInitial.value = fullName.charAt(0).toUpperCase()
+  }
+})
 
 const toggleDropdown = () => (showDropdown.value = !showDropdown.value)
 
