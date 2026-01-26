@@ -27,7 +27,7 @@
       <div v-if="stepErrors[currentStep]" class="text-red-600 bg-red-50 px-4 py-2 mb-4 rounded-lg text-sm">
         {{ stepErrors[currentStep] }}
       </div>
-      <RoomSelector v-if="currentStep === 0" @selected="onRoomSelected" :selectedRoomId="form.roomId" />
+      <RoomSelector v-if="currentStep === 0" @selected="onRoomSelected" @initialized="onRoomInitialized" :selectedRoomId="form.roomId" />
 
       <CustomersForm v-if="currentStep === 1" :max_customers="max_customers" :customers="form.customers"
         @update="(customers) => form.customers = customers" />
@@ -62,6 +62,29 @@
                 {{ selectedRoom?.price.toLocaleString() }} đ<span class="text-sm text-gray-500">/tháng</span>
               </span>
             </div>
+
+            <!-- Vật tư -->
+            <div class="mt-4">
+              <p class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                Vật tư mặc định
+              </p>
+              <div class="grid grid-cols-2 gap-2">
+                <div v-if="selectedSupplies.length === 0" class="col-span-2 text-gray-500 text-sm italic">
+                  Không có vật tư nào
+                </div>
+                <div v-for="s in selectedSupplies" :key="s.id"
+                  class="flex items-center gap-2 p-2 bg-green-50 rounded-lg text-sm text-gray-700">
+                  <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                  {{ s.name }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Tiện ích -->
             <div class="mt-4">
               <p class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +93,10 @@
                 Tiện ích đi kèm
               </p>
               <div class="grid grid-cols-2 gap-2">
-                <div v-for="u in selectedRoom?.utilities" :key="u.id"
+                <div v-if="selectedUtilities.length === 0" class="col-span-2 text-gray-500 text-sm italic">
+                  Không có tiện ích nào
+                </div>
+                <div v-for="u in selectedUtilities" :key="u.id"
                   class="flex items-center gap-2 p-2 bg-blue-50 rounded-lg text-sm text-gray-700">
                   <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
                   {{ u.utility_type_label }}
@@ -200,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue"
+import { ref, reactive, computed } from "vue"
 import RoomSelector from "./RoomSelector.vue"
 import CustomersForm from "./CustomersForm.vue"
 import SelectedTimeContractForm from "./SelectedTimeContractForm.vue"
@@ -244,7 +270,8 @@ const form = reactive({
   termMonths: 6,
   deposit: 0 as number,
   customers: [] as Customer[],
-  utilities: [] as { utility_id?: number; status?: number }[],
+  supplies: [] as { supply_id: number; quantity?: number }[],
+  utilities: [] as { utility_id: number }[],
   draftId: null as number | null
 })
 
@@ -266,13 +293,13 @@ function prev() {
 
 async function handleNext() {
   if (currentStep.value === 0) {
-    // Chỉ kiểm tra phòng được chọn
+    // Room selection is now handled by RoomSelector component
+    // The initialization happens when user clicks "Tiếp tục" button in RoomSelector
     if (!form.roomId) {
       stepErrors.value[0] = "Vui lòng chọn phòng"
       return
     }
-    stepErrors.value[0] = ""
-    next()
+    // Don't proceed - wait for onRoomInitialized to be called
   } else if (currentStep.value === 1) {
     // Call step1Service
     await submitStep1()
@@ -284,15 +311,56 @@ async function handleNext() {
 
 const selectedRoom = ref<any>(null)
 const max_customers = ref<number>(0)
+
+// Computed property to get selected utilities (those chosen in Step 0)
+const selectedUtilities = computed(() => {
+  if (!selectedRoom.value || !form.utilities || form.utilities.length === 0) {
+    return []
+  }
+  
+  const selectedUtilityIds = new Set(form.utilities.map((u: any) => u.utility_id))
+  return selectedRoom.value.utilities.filter((u: any) => selectedUtilityIds.has(u.id))
+})
+
+// Computed property to get selected supplies (those chosen in Step 0)
+const selectedSupplies = computed(() => {
+  if (!selectedRoom.value || !form.supplies || form.supplies.length === 0) {
+    return []
+  }
+  
+  const selectedSupplyIds = new Set(form.supplies.map((s: any) => s.supply_id))
+  return selectedRoom.value.supplies.filter((s: any) => selectedSupplyIds.has(s.id))
+})
+
 function onRoomSelected(room: any) {
   selectedRoom.value = room
   form.roomId = room?.id ?? null
   form.deposit = room?.price ?? 0
-  form.utilities =
-    room?.utilities?.map((u: any) => ({
-      utility_id: u.id
-    })) || []
+  form.supplies = []  // Sẽ được cập nhật trong onRoomInitialized
+  form.utilities = []  // Sẽ được cập nhật trong onRoomInitialized
   max_customers.value = room.max_customers
+}
+
+// Handle room initialization from Step 0
+function onRoomInitialized(data: any) {
+  form.draftId = data.draft_id
+  
+  // Lưu đúng supplies/utilities đã chọn
+  form.supplies = (data.selectedSupplyIds || []).map((supplyId: number) => ({
+    supply_id: supplyId,
+    quantity: 1
+  }))
+  
+  form.utilities = (data.selectedUtilityIds || []).map((utilityId: number) => ({
+    utility_id: utilityId
+  }))
+  
+  console.log('✅ Form updated with selected supplies:', form.supplies)
+  console.log('✅ Form updated with selected utilities:', form.utilities)
+  
+  stepErrors.value[0] = ""
+  toastSuccess("Phòng được khởi tạo thành công")
+  next()
 }
 
 // Step 1: Submit customers

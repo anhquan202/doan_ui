@@ -21,8 +21,10 @@ const errorApi = ref("")
 const handleSubmit = async (values: Form) => {
   try {
     const result = await signinService(values)
+    console.log(result.admin);
     sessionStorageHelper.setToken(result.token)
-    router.push({ name: 'rooms' })
+    sessionStorageHelper.setUser(result.admin)
+    router.push({ name: 'dashboard' })
   } catch (error: any) {
     errorApi.value = error.message
   }

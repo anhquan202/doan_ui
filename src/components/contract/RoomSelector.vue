@@ -128,18 +128,42 @@
             <!-- Vật tư -->
             <div v-if="selected.supplies && selected.supplies.length"
               class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-5 border border-green-100">
-              <h5 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                Vật tư mặc định
-              </h5>
-              <div class="grid grid-cols-2 gap-2">
-                <div v-for="s in selected.supplies" :key="s.id"
+              <div class="flex items-center justify-between mb-3">
+                <h5 class="font-semibold text-gray-900 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  Vật tư mặc định
+                </h5>
+                <button @click="showEditSupplies = !showEditSupplies"
+                  class="text-sm px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                  {{ showEditSupplies ? 'Xong' : 'Chỉnh sửa' }}
+                </button>
+              </div>
+              
+              <div v-if="!showEditSupplies" class="grid grid-cols-2 gap-2">
+                <div v-for="s in selectedSupplies" :key="s.id"
                   class="bg-white rounded-lg px-3 py-2 shadow-sm flex items-center gap-2">
                   <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span class="text-sm text-gray-700">{{ s.name }}</span>
+                  <span class="text-sm text-gray-700 flex-1">{{ s.name }}</span>
+                  <span class="text-xs text-gray-500">x{{ getSupplyQuantity(s.id) }}</span>
+                </div>
+              </div>
+
+              <div v-else class="space-y-2">
+                <div v-for="s in selected.supplies" :key="s.id"
+                  class="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                  <label class="flex items-center gap-2 flex-1">
+                    <input type="checkbox" :checked="isSupplySelected(s.id)" 
+                      @change="toggleSupply(s.id)"
+                      class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 cursor-pointer" />
+                    <span class="text-sm text-gray-700">{{ s.name }}</span>
+                  </label>
+                  <input v-if="isSupplySelected(s.id)" type="number" :value="getSupplyQuantity(s.id)"
+                    @input="(e) => setSupplyQuantity(s.id, Number((e.target as HTMLInputElement).value))"
+                    min="1" max="100"
+                    class="w-16 px-2 py-1 border border-gray-300 rounded text-sm" />
                 </div>
               </div>
             </div>
@@ -147,15 +171,22 @@
             <!-- Tiện ích -->
             <div v-if="selected.utilities && selected.utilities.length"
               class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-5 border border-amber-100">
-              <h5 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
-                Tiện ích đi kèm
-              </h5>
-              <div class="flex flex-wrap gap-2">
-                <span v-for="u in selected.utilities" :key="u.id"
+              <div class="flex items-center justify-between mb-3">
+                <h5 class="font-semibold text-gray-900 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  Tiện ích đi kèm
+                </h5>
+                <button @click="showEditUtilities = !showEditUtilities"
+                  class="text-sm px-3 py-1 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition">
+                  {{ showEditUtilities ? 'Xong' : 'Chỉnh sửa' }}
+                </button>
+              </div>
+              
+              <div v-if="!showEditUtilities" class="flex flex-wrap gap-2">
+                <span v-for="u in selectedUtilities" :key="u.id"
                   class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-white text-amber-700 shadow-sm border border-amber-200">
                   <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd"
@@ -165,7 +196,34 @@
                   {{ u.utility_type_label }}
                 </span>
               </div>
+
+              <div v-else class="space-y-2">
+                <div v-for="u in selected.utilities" :key="u.id"
+                  class="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm"
+                  :class="{ 'bg-amber-50 border border-amber-200': u.is_required }">
+                  <input type="checkbox" :checked="isUtilitySelected(u.id)" 
+                    @change="toggleUtility(u.id)"
+                    :disabled="u.is_required"
+                    class="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-2 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-50" />
+                  <span class="text-sm text-gray-700 flex-1">{{ u.utility_type_label }}</span>
+                  <span v-if="u.is_required" class="text-xs font-semibold px-2 py-1 bg-amber-200 text-amber-800 rounded-full">
+                    Bắt buộc
+                  </span>
+                </div>
+              </div>
             </div>
+
+            <!-- Nút Tiếp tục -->
+            <div class="flex justify-end gap-3 mt-6">
+              <button
+                @click="handleNext"
+                :disabled="!selected || isInitializing"
+                class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                <span v-if="isInitializing" class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                {{ isInitializing ? 'Đang xử lý...' : 'Tiếp tục' }}
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -174,26 +232,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import getAvailableRoomService from '@/services/admin/room/getAvailableRoomService';
+import { ref, onMounted, computed } from 'vue'
+import getAvailableRoomService from '@/services/admin/room/getAvailableRoomService'
+import step0Service, { type Step0Supply, type Step0Utility } from '@/services/admin/contract_wizard/step0Service'
+import { toastSuccess, toastError } from '@/helpers/toast'
 
 const props = defineProps<{ selectedRoomId?: number | null }>()
 const emit = defineEmits<{
   (e: 'selected', room: any | null): void
+  (e: 'initialized', data: { draft_id: number; selectedSupplyIds: number[]; selectedUtilityIds: number[] }): void
 }>()
 
 const rooms = ref<any[]>([])
 const loading = ref(false)
+const isInitializing = ref(false)
 const selected = ref<any | null>(null)
 const selectedId = ref<number | null>(null)
+const showEditSupplies = ref(false)
+const showEditUtilities = ref(false)
+
+// Track selected supplies and utilities with quantities
+const selectedSupplyIds = ref<Set<number>>(new Set())
+const selectedUtilityIds = ref<Set<number>>(new Set())
+const supplyQuantities = ref<Map<number, number>>(new Map())
 
 const formatPrice = (price: any) => {
-  if (!price) return '0đ';
+  if (!price) return '0đ'
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND'
-  }).format(price);
-};
+  }).format(price)
+}
+
+// Computed: Get selected supplies with their data
+const selectedSupplies = computed(() => {
+  if (!selected.value) return []
+  return selected.value.supplies.filter((s: any) => selectedSupplyIds.value.has(s.id))
+})
+
+// Computed: Get selected utilities with their data
+const selectedUtilities = computed(() => {
+  if (!selected.value) return []
+  return selected.value.utilities.filter((u: any) => selectedUtilityIds.value.has(u.id))
+})
 
 async function load() {
   loading.value = true
@@ -204,6 +285,9 @@ async function load() {
       const pre = rooms.value.find(r => r.id === props.selectedRoomId)
       if (pre) select(pre)
     }
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách phòng:', error)
+    toastError('Lỗi khi tải danh sách phòng')
   } finally {
     loading.value = false
   }
@@ -212,7 +296,115 @@ async function load() {
 function select(r: any) {
   selected.value = r
   selectedId.value = r.id
+  showEditSupplies.value = false
+  showEditUtilities.value = false
+  
+  // Initialize selected items with defaults (all items selected)
+  selectedSupplyIds.value = new Set((r.supplies || []).map((s: any) => s.id))
+  selectedUtilityIds.value = new Set((r.utilities || []).map((u: any) => u.id))
+  supplyQuantities.value = new Map((r.supplies || []).map((s: any) => [s.id, 1]))
+  
   emit('selected', r)
+}
+
+function isSupplySelected(supplyId: number): boolean {
+  return selectedSupplyIds.value.has(supplyId)
+}
+
+function toggleSupply(supplyId: number) {
+  if (selectedSupplyIds.value.has(supplyId)) {
+    selectedSupplyIds.value.delete(supplyId)
+    supplyQuantities.value.delete(supplyId)
+  } else {
+    selectedSupplyIds.value.add(supplyId)
+    supplyQuantities.value.set(supplyId, 1)
+  }
+}
+
+function getSupplyQuantity(supplyId: number): number {
+  return supplyQuantities.value.get(supplyId) || 1
+}
+
+function setSupplyQuantity(supplyId: number, quantity: number) {
+  supplyQuantities.value.set(supplyId, Math.max(1, quantity))
+}
+
+function isUtilitySelected(utilityId: number): boolean {
+  return selectedUtilityIds.value.has(utilityId)
+}
+
+function toggleUtility(utilityId: number) {
+  const utility = selected.value?.utilities?.find((u: any) => u.id === utilityId)
+  
+  // Không cho phép bỏ tick các tiện ích bắt buộc
+  if (utility?.is_required && selectedUtilityIds.value.has(utilityId)) {
+    return
+  }
+  
+  if (selectedUtilityIds.value.has(utilityId)) {
+    selectedUtilityIds.value.delete(utilityId)
+  } else {
+    selectedUtilityIds.value.add(utilityId)
+  }
+}
+
+async function handleNext() {
+  if (!selected.value) return
+
+  isInitializing.value = true
+  try {
+    // Chuẩn bị dữ liệu
+    const supplyData: Step0Supply[] = Array.from(selectedSupplyIds.value).map(supplyId => {
+      const quantity = supplyQuantities.value.get(supplyId) || 1
+      return { supply_id: supplyId, quantity }
+    })
+
+    const utilityData: Step0Utility[] = Array.from(selectedUtilityIds.value).map(utilityId => ({
+      utility_id: utilityId
+    }))
+
+    console.log('📤 Gửi step0Service với:', {
+      room_id: selected.value.id,
+      supplies: supplyData,
+      utilities: utilityData
+    })
+
+    // Gửi API
+    const response = await step0Service({
+      room_id: selected.value.id,
+      supplies: supplyData,
+      utilities: utilityData
+    })
+
+    console.log('📥 Response từ step0Service:', response)
+
+    // Phát sự kiện cho component cha
+    const draftId = response?.data?.draft_id
+    console.log('📌 Draft ID:', draftId)
+
+    if (!draftId) {
+      throw new Error('Không nhận được draft_id từ API')
+    }
+
+    // Truyền selected supplies và utilities để parent có thể lưu
+    const selectedSupplyIdsList = Array.from(selectedSupplyIds.value)
+    const selectedUtilityIdsList = Array.from(selectedUtilityIds.value)
+
+    console.log('📌 Selected Supplies:', selectedSupplyIdsList)
+    console.log('📌 Selected Utilities:', selectedUtilityIdsList)
+
+    emit('initialized', {
+      draft_id: draftId,
+      selectedSupplyIds: selectedSupplyIdsList,
+      selectedUtilityIds: selectedUtilityIdsList
+    })
+
+  } catch (error) {
+    console.error('❌ Lỗi khi khởi tạo phòng:', error)
+    toastError('Lỗi khi khởi tạo phòng: ' + (error instanceof Error ? error.message : String(error)))
+  } finally {
+    isInitializing.value = false
+  }
 }
 
 onMounted(load)
